@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>PLC Interface</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        /* Fixed Navbar */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: #2a5db0;
+            color: #fff;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .nav-title {
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+
+        .nav-links a {
+            color: #fff;
+            text-decoration: none;
+            font-weight: bold;
+            padding: 8px 16px;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+
+        .nav-links a:hover {
+            background: #174080;
+        }
+
+        /* Scrollable Content Area */
+        .content-wrapper {
+            margin-top: 60px;
+            padding: 20px;
+            max-width: 900px;
+            width: 100%;
+            margin-left: auto;
+            margin-right: auto;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        h1, h3, h4 {
+            color: #2a5db0;
+        }
+
+        .container, .form-group {
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        input, button {
+            padding: 8px 10px;
+            margin: 5px 0;
+            font-size: 1rem;
+        }
+
+        input[type="text"] {
+            width: 250px;
+        }
+
+        button {
+            background-color: #2a5db0;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #1f448a;
+        }
+
+        #tagList {
+            margin-top: 10px;
+        }
+
+        .tag-item {
+            cursor: pointer;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .tag-item:hover {
+            background-color: #f0f0f0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        table, th, td {
+            border: 1px solid #ccc;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #e8effc;
+        }
+
+        /* Footer */
+        footer {
+            background-color: #2a5db0;
+            color: white;
+            text-align: center;
+            padding: 15px 10px;
+            font-size: 0.9rem;
+            margin-top: auto;
+        }
+
+        footer a {
+            color: #ffffff;
+            text-decoration: underline;
+        }
+
+        @media (max-width: 600px) {
+            input[type="text"] {
+                width: 100%;
+            }
+
+            .nav-links {
+                flex-direction: column;
+                gap: 10px;
+                margin-right: 0;
+            }
+
+            .navbar {
+                flex-direction: column;
+                height: auto;
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <div class="navbar">
+        <div class="nav-title">The Clever Warehouse</div>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="controlcenter.html">Loading Station</a>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="content-wrapper">
+        <h1>PLC Interface</h1>
+
+        <div class="container">
+            <h3>Connection Status: <span id="status">Checking...</span></h3>
+        </div>
+
+        <div class="container">
+            <h3>Browse Tags</h3>
+            <input type="text" id="startingNode" placeholder="Starting Node (optional)">
+            <button onclick="browseTags()">Browse</button>
+            <button onclick="resetBrowse()">Reset</button>
+            <div id="browseHistory" style="margin-top: 10px;">
+                <h4>Browse History</h4>
+                <div id="historyList"></div>
+                <button onclick="clearHistory()" style="font-size: 0.8em;">Clear History</button>
+            </div>
+            <div id="tagList"></div>
+        </div>
+
+        <div class="container">
+            <h3>Read/Write Values</h3>
+            <input type="text" id="nodeId" placeholder="Node ID">
+            <button onclick="readValue()">Read</button>
+            <div>
+                <input type="text" id="writeValue" placeholder="Value to write">
+                <button onclick="writeValue()">Write</button>
+            </div>
+            <pre id="valueDisplay"></pre>
+        </div>
+
+        <div class="container">
+            <label for="nodeIdInput">Node ID:</label>
+            <input type="text" id="nodeIdInput" placeholder="ns=2;s=MyNode">
+            <button onclick="readNode()">Read All Values Under Node</button>
+        </div>
+
+        <div id="nodeValues" class="container">
+            <!-- Node values table will render here -->
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        &copy; 2025 The Clever Warehouse. All rights reserved. |
+        <a href="#">Privacy Policy</a> |
+        <a href="#">Contact Us</a>
+    </footer>
+
+    <!-- Scripts -->
+    <script>
+        async function checkStatus() {
+            const response = await fetch('/api/plc/status');
+            const status = await response.text();
+            document.getElementById('status').textContent = status;
+        }
+
+        async function browseTags() {
+            const startingNode = document.getElementById('startingNode').value;
+            const url = '/api/plc/browse' + (startingNode ? `?startingNode=${startingNode}` : '');
+
+            if (startingNode) {
+                addToHistory(startingNode);
+                updateHistoryDisplay();
+            }
+
+            const response = await fetch(url);
+            const tags = await response.json();
+
+            const tagList = document.getElementById('tagList');
+            tagList.innerHTML = tags.map(tag => `
+                <div class="tag-item">
+                    <span onclick="selectTag('${tag}')">${tag}</span>
+                </div>
+            `).join('');
+        }
+
+        function selectTag(tag) {
+            document.getElementById('nodeId').value = tag;
+        }
+
+        async function readValue() {
+            try {
+                const nodeId = document.getElementById('nodeId').value;
+                const response = await fetch(`/api/plc/read?nodeId=${encodeURIComponent(nodeId)}`);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const data = await response.json();
+                document.getElementById('valueDisplay').textContent =
+                    `Value: ${data.value}\nTimestamp: ${new Date(data.timestamp).toLocaleString()}\nStatus: ${data.status}`;
+            } catch (error) {
+                document.getElementById('valueDisplay').textContent = `Error: ${error.message}`;
+            }
+        }
+
+        async function writeValue() {
+            try {
+                const nodeId = document.getElementById('nodeId').value;
+                const value = document.getElementById('writeValue').value;
+                const response = await fetch('/api/plc/write', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nodeId, value })
+                });
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const result = await response.json();
+                document.getElementById('valueDisplay').textContent =
+                    `Write successful!\nValue: ${result.value}\nStatus: ${result.status}`;
+            } catch (error) {
+                document.getElementById('valueDisplay').textContent = `Error: ${error.message}`;
+            }
+        }
+
+        function addToHistory(node) {
+            const history = getHistory();
+            history.unshift(node);
+            const uniqueHistory = [...new Set(history)].slice(0, 10);
+            localStorage.setItem('browseHistory', JSON.stringify(uniqueHistory));
+        }
+
+        function getHistory() {
+            const history = localStorage.getItem('browseHistory');
+            return history ? JSON.parse(history) : [];
+        }
+
+        function updateHistoryDisplay() {
+            const history = getHistory();
+            const historyList = document.getElementById('historyList');
+            historyList.innerHTML = history.map(node =>
+                `<div class="tag-item" onclick="useHistoryItem('${node}')">${node}</div>`
+            ).join('');
+        }
+
+        function useHistoryItem(node) {
+            document.getElementById('startingNode').value = node;
+            browseTags();
+        }
+
+        function clearHistory() {
+            localStorage.removeItem('browseHistory');
+            updateHistoryDisplay();
+        }
+
+        function resetBrowse() {
+            document.getElementById('startingNode').value = '';
+            document.getElementById('tagList').innerHTML = '';
+        }
+
+        function readNode() {
+            const nodeId = document.getElementById('nodeIdInput').value;
+            if (!nodeId) {
+                alert('Please enter a node ID');
+                return;
+            }
+
+            fetch(`/api/plc/read-node?nodeId=${encodeURIComponent(nodeId)}`)
+                .then(response => response.json())
+                .then(data => {
+                    const valuesDiv = document.getElementById('nodeValues');
+                    valuesDiv.innerHTML = '<h4>Node Values:</h4>';
+
+                    const table = document.createElement('table');
+                    table.innerHTML = `
+                        <thead>
+                            <tr><th>Tag</th><th>Value</th><th>Timestamp</th></tr>
+                        </thead>
+                        <tbody></tbody>
+                    `;
+
+                    Object.entries(data).forEach(([tag, info]) => {
+                        const row = table.querySelector('tbody').insertRow();
+                        row.innerHTML = `
+                            <td>${tag}</td>
+                            <td>${info.value}</td>
+                            <td>${new Date(info.timestamp).toLocaleString()}</td>
+                        `;
+                    });
+
+                    valuesDiv.appendChild(table);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error reading node values');
+                });
+        }
+
+        // Initial setup
+        checkStatus();
+        updateHistoryDisplay();
+    </script>
+</body>
+</html>
