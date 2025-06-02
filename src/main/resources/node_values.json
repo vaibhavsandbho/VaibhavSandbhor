@@ -1,0 +1,7 @@
+
+  {
+  "ns=3;s=\"PLC_To_WMS\".\"LOADING_STATION_PALLET_PRESENT (CH-01)\"": true,
+  "ns=3;s=\"PLC_To_WMS\".\"LOADING_STATION_MATERIAL_CODE (CH-01)\"": "MAT1234",
+  "ns=3;s=\"WMS_TO_PLC\".\"LOADING_STATION_WORK_DONE (CH-01)\"":true
+}
+
