@@ -32,15 +32,15 @@ public class OpcUaService {
     private final PlcConfiguration plcConfig;
     private OpcUaClient client;
     private final Map<String, DataValue> tagValues = new ConcurrentHashMap<>();
-    private final KafkaBrowseService kafkaBrowseService;
+//    private final KafkaBrowseService kafkaBrowseService;
     private final OpcUaValueConverter valueConverter;
 
     @Autowired
     public OpcUaService(PlcConfiguration plcConfig, 
-                       KafkaBrowseService kafkaBrowseService,
+//                       KafkaBrowseService kafkaBrowseService,
                        OpcUaValueConverter valueConverter) {
         this.plcConfig = plcConfig;
-        this.kafkaBrowseService = kafkaBrowseService;
+//        this.kafkaBrowseService = kafkaBrowseService;
         this.valueConverter = valueConverter;
     }
 
@@ -187,7 +187,6 @@ public class OpcUaService {
 
     public Optional<DataValue> readValue(String identifier) {
         try {
-        	
         	log.info("Read value from identifier:{}",identifier);
             DataValue value = client.readValue(0.0, TimestampsToReturn.Both, NodeId.parse(identifier)).get();
             return Optional.ofNullable(value);
@@ -266,7 +265,7 @@ public class OpcUaService {
             StatusCode status = statusCodes.get(0);
             
             if (status.isGood()) {
-                log.info("Successfully wrote '{}' to nodeId={}", value, nodeId);
+               
                 
                 // Read back the value to verify and publish to Kafka
                 Optional<DataValue> readBack = readValue(identifier);
@@ -356,7 +355,7 @@ public class OpcUaService {
             browseData.put("serverTimestamp", dataValue.getServerTime() != null ? 
                 dataValue.getServerTime().getJavaTime() : null);
             
-            kafkaBrowseService.processBrowseData(identifier, browseData);
+//            kafkaBrowseService.processBrowseData(identifier, browseData);
         } catch (Exception e) {
             log.error("Error publishing browse data for identifier: {}", identifier, e);
         }
@@ -368,7 +367,7 @@ public class OpcUaService {
             List<String> tags = browseTags(startingNode);
             List<NodeId> nodeIds = tags.stream()
                 .map(NodeId::parse)
-                .toList();
+                .toList();                 
             
             if (!nodeIds.isEmpty()) {
                 List<DataValue> values = client.readValues(0.0, TimestampsToReturn.Both, nodeIds).get();
