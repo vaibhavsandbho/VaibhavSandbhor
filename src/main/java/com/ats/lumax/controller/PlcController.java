@@ -121,55 +121,55 @@ public class PlcController {
             return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
         }
     }
-    @PostConstruct
-    public ResponseEntity<String> changeValue() {
-    	
-    	
-    	
-    	Thread monitorThread = null;
-        if (monitorThread != null && monitorThread.isAlive()) {
-            return ResponseEntity.ok("Monitor thread already running.");
-        }
-
-        monitorThread = new Thread(() -> {
-            while (!Thread.currentThread().isInterrupted()) {
-                try {
-                    Optional<DataValue> value = opcUaService.readValue("ns=3;s=\"PLC_To_WMS\".\"STKR1_Heart Bit\"");
-
-                    if (value.isPresent()) {
-                        Object result = value.get().getValue().getValue();
-                        
-
-                        boolean writeSuccess;
-                        if (result instanceof Boolean && (Boolean) result) {
-                           ;
-                            writeSuccess = opcUaService.writeValue("ns=3;s=\"WMS_TO_PLC\".\"STKR1_Heart Bit\"", "true");
-                        } else {
-                           
-                            writeSuccess = opcUaService.writeValue("ns=3;s=\"WMS_TO_PLC\".\"STKR1_Heart Bit\"", "false");
-                        }
-
-               
-                    } else {
-                        log.warn("No value present for the source tag.");
-                    }
-
-                    Thread.sleep(1000); // Wait 1 second before next read
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt(); // Restore interrupt flag
-                    log.info("Monitor thread interrupted, stopping.");
-                    break;
-                } catch (Exception e) {
-                    log.error("Error in monitor thread: {}", e.getMessage());
-                }
-            }
-        });
-
-        monitorThread.setDaemon(true);
-        monitorThread.start();
-
-        return ResponseEntity.ok("Monitor thread started.");
-    }
+//    @PostConstruct
+//    public ResponseEntity<String> changeValue() {
+//    	
+//    	
+//    	
+//    	Thread monitorThread = null;
+//        if (monitorThread != null && monitorThread.isAlive()) {
+//            return ResponseEntity.ok("Monitor thread already running.");
+//        }
+//
+//        monitorThread = new Thread(() -> {
+//            while (!Thread.currentThread().isInterrupted()) {
+//                try {
+//                    Optional<DataValue> value = opcUaService.readValue("ns=3;s=\"PLC_To_WMS\".\"STKR1_Heart Bit\"");
+//
+//                    if (value.isPresent()) {
+//                        Object result = value.get().getValue().getValue();
+//                        
+//
+//                        boolean writeSuccess;
+//                        if (result instanceof Boolean && (Boolean) result) {
+//                           ;
+//                            writeSuccess = opcUaService.writeValue("ns=3;s=\"WMS_TO_PLC\".\"STKR1_Heart Bit\"", "true");
+//                        } else {
+//                           
+//                            writeSuccess = opcUaService.writeValue("ns=3;s=\"WMS_TO_PLC\".\"STKR1_Heart Bit\"", "false");
+//                        }
+//
+//               
+//                    } else {
+//                        log.warn("No value present for the source tag.");
+//                    }
+//
+//                    Thread.sleep(1000); // Wait 1 second before next read
+//                } catch (InterruptedException e) {
+//                    Thread.currentThread().interrupt(); // Restore interrupt flag
+//                    log.info("Monitor thread interrupted, stopping.");
+//                    break;
+//                } catch (Exception e) {
+//                    log.error("Error in monitor thread: {}", e.getMessage());
+//                }
+//            }
+//        });
+//
+//        monitorThread.setDaemon(true);
+//        monitorThread.start();
+//
+//        return ResponseEntity.ok("Monitor thread started.");
+//    }
 
     @Data
     static class WriteRequest {

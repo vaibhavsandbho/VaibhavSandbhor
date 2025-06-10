@@ -10,8 +10,10 @@ spring:
     hibernate:
       ddl-auto: update # Options: validate / create / create-drop
     show-sql: true
+    
+    
 server:
-  port: 8088
+  port: 8090
 plc:
   opc-ua:
     enabled: true

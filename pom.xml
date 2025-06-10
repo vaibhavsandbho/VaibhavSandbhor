@@ -12,10 +12,10 @@
     </parent>
 
     <groupId>com.ats</groupId>
-    <artifactId>HeartBeat</artifactId>
+    <artifactId>EquipmentAlarm</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>plc-integration</name>
-    <description> Read and Write Heart Beat using Spring Boot and OPC UA</description>
+    <description> Read and Write Alarm using Spring Boot and OPC UA</description>
     <url>https://your-repository-url.com</url>
 
     <licenses>
@@ -54,13 +54,31 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
+        <dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-data-redis</artifactId>
+</dependency>
 
+ <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-data-jpa</artifactId>
+    </dependency>
+    <dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+			<scope>runtime</scope>
+		</dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-devtools</artifactId>
             <scope>runtime</scope>
             <optional>true</optional>
         </dependency>
+<dependency>
+    <groupId>com.fasterxml.jackson.datatype</groupId>
+    <artifactId>jackson-datatype-jsr310</artifactId>
+    <version>2.13.4</version>
+</dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>

@@ -14,15 +14,28 @@ import org.eclipse.milo.opcua.stack.core.types.enumerated.MonitoringMode;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.TimestampsToReturn;
 import org.eclipse.milo.opcua.stack.core.types.structured.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 
+import java.io.File;
+import java.io.IOException;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.ats.lumax.Entity.EquipmentAlarmDetails;
+import com.ats.lumax.Entity.MasterEquipmentDetailsEntity;
 import com.ats.lumax.config.PlcConfiguration;
+import com.ats.lumax.repo.EquipmetAlarmDetailsRepo;
+import com.ats.lumax.repo.MasterEquipmentRepo;
+import com.fasterxml.jackson.core.exc.StreamWriteException;
+import com.fasterxml.jackson.databind.DatabindException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.collect.ImmutableList;
 
 
@@ -31,6 +44,10 @@ import com.google.common.collect.ImmutableList;
 public class OpcUaService {
     private final PlcConfiguration plcConfig;
     private OpcUaClient client;
+    @Autowired
+    private EquipmetAlarmDetailsRepo equipmentAlarmDetailsRepo;
+    @Autowired
+    private  MasterEquipmentRepo masterEquipmentRepo;
     private final Map<String, DataValue> tagValues = new ConcurrentHashMap<>();
 //    private final KafkaBrowseService kafkaBrowseService;
     private final OpcUaValueConverter valueConverter;
@@ -187,7 +204,7 @@ public class OpcUaService {
 
     public Optional<DataValue> readValue(String identifier) {
         try {
-        	log.info("Read value from identifier:{}",identifier);
+        
             DataValue value = client.readValue(0.0, TimestampsToReturn.Both, NodeId.parse(identifier)).get();
             return Optional.ofNullable(value);
         } catch (Exception e) {
@@ -386,4 +403,39 @@ public class OpcUaService {
             return results;
         }
     }
+    
+    
+@PostConstruct
+    public void saveDataFormDb() {
+        try {
+            List<EquipmentAlarmDetails> list = equipmentAlarmDetailsRepo.findAll();
+
+            ObjectMapper mapper = new ObjectMapper();
+
+            String filePath = System.getProperty("user.dir") + "/EquipmentAlarmDetails.json";
+            File file = new File(filePath);
+
+            mapper.writeValue(file, list);
+            System.out.println("Data successfully written to: " + file.getAbsolutePath());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    @PostConstruct
+    public void saveEquipmentDetails() throws StreamWriteException, DatabindException, IOException
+    {
+    	 
+    	    List<MasterEquipmentDetailsEntity> listEquipment=masterEquipmentRepo.findAll();
+    	    
+    	    ObjectMapper mapper = new ObjectMapper();
+    	    
+    	    String filePath=System.getProperty("user.dir")+"/EquipmentDeatails.json";
+    	    
+    	    File file=new File(filePath);
+    	    
+    	    mapper.writeValue(file,listEquipment);
+    	    System.out.println("Data successfully written to: " + file.getAbsolutePath());
+    	     
+    }
+
 } 
