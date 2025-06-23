@@ -1,13 +1,16 @@
 package com.ats.lumax.Entity;
 
-import java.time.LocalDateTime;
-
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.Data;
+@Table(name = "resolved_equipment_alarms", schema = "public")
 @Entity
-@Table(name = "equipment_alarm_history", schema = "public")
 @Data
-public class EquipmentAlarmHistoryEntity {
+public class Resolvedequipmentalarms {
 	
 	
 	@Id
@@ -41,6 +44,5 @@ public class EquipmentAlarmHistoryEntity {
 
 	    @Column(name = "equipment_alarm_resolved_datetime")
 	    private String alarmResolvedDatetime;
-		  
 
 }
