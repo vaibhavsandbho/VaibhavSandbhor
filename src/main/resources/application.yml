@@ -24,6 +24,10 @@ spring:
       SPRING_REDIS_HOST: redis
 server:
   port: 8090
+  servlet:
+    connection-timeout: 60s
+
+
 plc:
   opc-ua:
     enabled: true
