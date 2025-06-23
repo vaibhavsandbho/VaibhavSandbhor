@@ -11,9 +11,24 @@ spring:
       ddl-auto: update # Options: validate / create / create-drop
     show-sql: true
     
-    
+    services:
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+  app:
+    build: .
+    depends_on:
+      - redis
+    environment:
+      SPRING_REDIS_HOST: redis
+
 server:
   port: 8090
+  servlet:
+    connection-timeout: 60s
+
+
 plc:
   opc-ua:
     enabled: true

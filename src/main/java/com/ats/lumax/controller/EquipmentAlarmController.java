@@ -1,14 +1,13 @@
 package com.ats.lumax.controller;
 
 import java.io.File;
+import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.time.format.DateTimeFormatter;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
+import java.util.*;
+import java.util.function.Function;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -19,16 +18,20 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.eclipse.milo.opcua.stack.core.types.builtin.DataValue;
 import org.eclipse.milo.opcua.stack.core.types.builtin.Variant;
-
+import org.modelmapper.ModelMapper;
 
 import com.ats.lumax.Entity.EquipmentAlarmDetails;
+import com.ats.lumax.Entity.EquipmentAlarmHistoryDto;
 import com.ats.lumax.Entity.EquipmentAlarmHistoryEntity;
 import com.ats.lumax.Entity.MasterEquipmentDetailsEntity;
+
 import com.ats.lumax.repo.EquipmentAlaramHistoryrepo;
 
 import com.ats.lumax.repo.EquipmetAlarmDetailsRepo;
 import com.ats.lumax.repo.MasterEquipmentRepo;
+import com.ats.lumax.service.CacheAlarmService;
 import com.ats.lumax.service.OpcUaService;
+import com.ats.lumax.service.OpcUaValueConverter;
 import com.ats.lumax.service.PredefinedNodeValueService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -42,9 +45,13 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 public class EquipmentAlarmController {
-	
 
+
+    private final OpcUaValueConverter opcUaValueConverter;
+
+	
 	private final PredefinedNodeValueService predefinedNodeValueService;
+
     private final OpcUaService opcUaService;
     
     private final EquipmentAlaramHistoryrepo equipmentHistoryrepo;
@@ -54,6 +61,18 @@ public class EquipmentAlarmController {
              
     @Autowired
    private  MasterEquipmentRepo masterEquipmentRepo;
+    @Autowired
+    private StringRedisTemplate redisTemplate;
+    
+    @Autowired
+    private CacheAlarmService cacheAlarmServiceInstance;
+    
+    @Autowired
+    private ModelMapper modelMapper;
+    
+    private final Map<String, Boolean> alarmStates = new ConcurrentHashMap<>();
+//
+   
 
     @GetMapping("/status")
     public ResponseEntity<String> getConnectionStatus() {
@@ -108,7 +127,7 @@ public class EquipmentAlarmController {
         thread.setDaemon(true); // Optional: stops when app stops
         thread.start();
     }
-    private final Map<String, Boolean> alarmStates = new ConcurrentHashMap<>();
+ 
 
 
     /**
@@ -120,117 +139,140 @@ public class EquipmentAlarmController {
      * This method uses an in-memory cache (alarmStates) to avoid repeated database writes and reduce load.
      */
     
-    @Autowired
-    private StringRedisTemplate redisTemplate;
-
     public void readAndProcessValues() {
-        // Retrieve all predefined node IDs and their values (typically configured tags to monitor)
         Map<String, Object> nodeValues = predefinedNodeValueService.getAllValues();
-      
 
-        // Load JSON files only once to avoid repetitive I/O in the loop
         List<EquipmentAlarmDetails> alarmDetailsList = loadAlarmDetailsFromJson();
         List<MasterEquipmentDetailsEntity> equipmentDetailsList = loadEquipmentDetailsFromJson();
 
-        // Iterate over each nodeId to check and process its current status
-        for (String nodeId : nodeValues.keySet()) {
+        Map<String, EquipmentAlarmDetails> alarmDetailsMap = alarmDetailsList.stream()
+            .collect(Collectors.toMap(e -> e.getEquipmentAlarmTag().replace("\"", ""), Function.identity()));
+
+        Map<Integer, MasterEquipmentDetailsEntity> equipmentMap = equipmentDetailsList.stream()
+            .collect(Collectors.toMap(MasterEquipmentDetailsEntity::getEquipmentId, Function.identity()));
+
+        List<EquipmentAlarmHistoryEntity> alarmsToInsert = Collections.synchronizedList(new ArrayList<>());
+        List<EquipmentAlarmHistoryEntity> alarmsToUpdate = Collections.synchronizedList(new ArrayList<>());
+
+        try {
+            nodeValues.keySet().parallelStream().forEach(nodeId -> {
+                try {
+                    Optional<DataValue> valueOpt = opcUaService.readValue(nodeId);
+                    if (valueOpt.isEmpty()) return;
+
+                    DataValue dataValue = valueOpt.get();
+                    Object result = dataValue.getValue() != null ? dataValue.getValue().getValue() : null;
+                    boolean isTrue = result instanceof Boolean && (Boolean) result;
+
+                    String normalizedNodeId = nodeId.replace("\"", "");
+                    String redisKey = "alarmState:" + normalizedNodeId;
+
+                    String cachedState = redisTemplate.opsForValue().get(redisKey);
+                    boolean wasPreviouslyActive = cachedState != null && Boolean.parseBoolean(cachedState);
+
+                    String now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+
+                    if (isTrue && !wasPreviouslyActive) {
+                        log.info("Alarm activated for nodeId: {}", nodeId);
+                        redisTemplate.opsForValue().set(redisKey, "true");
+
+                        EquipmentAlarmDetails alarmDetail = alarmDetailsMap.get(normalizedNodeId);
+                        if (alarmDetail == null) return;
+
+                        MasterEquipmentDetailsEntity equipment = equipmentMap.get(alarmDetail.getEquipmentId());
+                        if (equipment == null) return;
+
+                        EquipmentAlarmHistoryEntity alarm = new EquipmentAlarmHistoryEntity();
+                        alarm.setEquipmentAlarmName(alarmDetail.getEquipmentAlarmName());
+                        alarm.setEquipmentAlarmDesc(alarmDetail.getEquipmentAlarmDesc());
+                        alarm.setEquipmentAlarmId(alarmDetail.getEquipmentAlarmId());
+                        alarm.setEquipmentId(equipment.getEquipmentId());
+                        alarm.setEquipmentName(equipment.getEquipmentName());
+                        alarm.setEquipmentDesc(equipment.getEquipmentDesc());
+                        alarm.setAlarmOccurredDatetime(now);
+                        alarm.setAlarmResolvedDatetime("NA");
+                        alarm.setEquipmentAlarmStatus(true);
+
+                        alarmsToInsert.add(alarm);
+
+                    } else if (!isTrue && wasPreviouslyActive) {
+                        log.info("Alarm resolved for nodeId: {}", nodeId);
+                        redisTemplate.opsForValue().set(redisKey, "false");
+
+                        EquipmentAlarmDetails alarmDetails = alarmDetailsMap.get(normalizedNodeId);
+                        if (alarmDetails == null) return;
+
+                        EquipmentAlarmHistoryEntity history = equipmentHistoryrepo.findbyequipmentAlarmId(alarmDetails.getEquipmentAlarmId());
+                        if (history == null || !history.getEquipmentAlarmStatus()) return;
+
+                        history.setAlarmResolvedDatetime(now);
+                        history.setEquipmentAlarmStatus(false);
+
+                        alarmsToUpdate.add(history);
+                    }
+
+                } catch (Exception e) {
+                    log.warn("Error processing nodeId {}: {}", nodeId, e.getMessage());
+                }
+            });
+        } finally {
             try {
-                // Read the current value from the OPC UA server for the node
-                Optional<DataValue> valueOpt = opcUaService.readValue(nodeId);
-                if (valueOpt.isEmpty()) continue;
+                if (!alarmsToInsert.isEmpty()) {
+                    equipmentHistoryrepo.saveAll(alarmsToInsert);
+                    log.info("Inserted {} new alarms", alarmsToInsert.size());
 
-                // Extract the actual value from the OPC UA variant
-                DataValue dataValue = valueOpt.get();
-                Object result = dataValue.getValue() != null ? dataValue.getValue().getValue() : null;
+                    List<EquipmentAlarmHistoryDto> cachedDtos =
+                        (List<EquipmentAlarmHistoryDto>) cacheAlarmServiceInstance.redisTemplate.opsForValue().get(cacheAlarmServiceInstance.ACTIVE_ALARMS_KEY);
 
-                // Determine whether the alarm condition is active (true) or not
-                boolean isTrue = result instanceof Boolean && (Boolean) result;
-
-                // Construct Redis key for tracking alarm state
-                String redisKey = "alarmState:" + nodeId;
-
-                // Retrieve previous state from Redis cache
-                String cachedState = redisTemplate.opsForValue().get(redisKey);
-                boolean wasPreviouslyActive = cachedState != null && Boolean.parseBoolean(cachedState);
-
-                // Normalize nodeId (remove quotes)
-                String normalizedNodeId = nodeId.replace("\"", "");
-
-                // Case 1: Alarm has just become active
-                if (isTrue && !wasPreviouslyActive) {
-                    log.info("Alarm activated for nodeId: {}", nodeId);
-
-                    // Update Redis to mark the alarm as active
-                    redisTemplate.opsForValue().set(redisKey, "true");
-
-                    // Find alarm details for this nodeId
-                    Optional<EquipmentAlarmDetails> alarmOpt = alarmDetailsList.stream()
-                            .filter(e -> normalizedNodeId.equals(e.getEquipmentAlarmTag()))
-                            .findFirst();
-
-                    if (alarmOpt.isPresent()) {
-                        EquipmentAlarmDetails alarmDetail = alarmOpt.get();
-
-                        // Find corresponding equipment information based on equipmentId
-                        Optional<MasterEquipmentDetailsEntity> equipmentOpt = equipmentDetailsList.stream()
-                                .filter(e -> alarmDetail.getEquipmentId().equals(e.getEquipmentId()))
-                                .findFirst();
-
-                        if (equipmentOpt.isPresent()) {
-                            MasterEquipmentDetailsEntity equipment = equipmentOpt.get();
-
-                            // Create and populate alarm history record
-                            EquipmentAlarmHistoryEntity alarm = new EquipmentAlarmHistoryEntity();
-                            alarm.setEquipmentAlarmName(alarmDetail.getEquipmentAlarmName());
-                            alarm.setEquipmentAlarmDesc(alarmDetail.getEquipmentAlarmDesc());
-                            alarm.setEquipmentAlarmId(alarmDetail.getEquipmentAlarmId());
-                            alarm.setEquipmentId(equipment.getEquipmentId());
-                            alarm.setEquipmentName(equipment.getEquipmentName());
-                            alarm.setEquipmentDesc(equipment.getEquipmentDesc());
-                            alarm.setAlarmOccurredDatetime(LocalDateTime.now().toString());
-                            alarm.setAlarmResolvedDatetime("NA");
-                            alarm.setEquipmentAlarmStatus(true); // true = active
-
-                            // Save the alarm history record to the database
-                            equipmentHistoryrepo.save(alarm);
-                            log.info("Alarm saved to DB for nodeId: {}", nodeId);
-                        }
+                    if (cachedDtos == null) {
+                        cachedDtos = new ArrayList<>();
                     }
 
+                    Set<Integer> existingAlarmIds = cachedDtos.stream()
+                        .map(EquipmentAlarmHistoryDto::getEquipmentAlarmId)
+                        .collect(Collectors.toSet());
+
+                    List<EquipmentAlarmHistoryDto> newDtos = alarmsToInsert.stream()
+                        .filter(a -> !existingAlarmIds.contains(a.getEquipmentAlarmId()))
+                        .map(a -> modelMapper.map(a, EquipmentAlarmHistoryDto.class))
+                        .collect(Collectors.toList());
+
+                    cachedDtos.addAll(newDtos);
+
+                    cacheAlarmServiceInstance.redisTemplate.opsForValue().set(
+                        cacheAlarmServiceInstance.ACTIVE_ALARMS_KEY,
+                        cachedDtos,
+                        Duration.ofMinutes(1)
+                    );
                 }
-                // Case 2: Alarm has just been resolved
-                else if (!isTrue && wasPreviouslyActive) {
-                    // Update Redis to mark the alarm as inactive
-                    redisTemplate.opsForValue().set(redisKey, "false");
-                    log.info("Alarm resolved for nodeId: {}", nodeId);
 
-                    // Look up the alarm details from DB using nodeId
-                    Optional<EquipmentAlarmDetails> alarmDetailOpt = equipmentAlarmDetailsRepo.findByequipmentAlarmTag(normalizedNodeId);
-                    if (alarmDetailOpt.isPresent()) {
-                        EquipmentAlarmDetails alarmDetail = alarmDetailOpt.get();
+                if (!alarmsToUpdate.isEmpty()) {
+                    equipmentHistoryrepo.saveAll(alarmsToUpdate);
+                    log.info("Updated {} resolved alarms", alarmsToUpdate.size());
 
-                        // Find existing history record for the active alarm
-                        EquipmentAlarmHistoryEntity history = equipmentHistoryrepo.findbyequipmentAlarmId(alarmDetail.getEquipmentAlarmId());
+                    List<EquipmentAlarmHistoryDto> cachedDtos =
+                        (List<EquipmentAlarmHistoryDto>) cacheAlarmServiceInstance.redisTemplate.opsForValue().get(cacheAlarmServiceInstance.ACTIVE_ALARMS_KEY);
 
-                        if (history != null) {
-                            // Mark alarm as resolved and update time
-                            history.setAlarmResolvedDatetime(LocalDateTime.now().toString());
-                            history.setEquipmentAlarmStatus(false); // false = resolved
-                            equipmentHistoryrepo.save(history);
-                            log.info("Alarm updated as resolved for: {}", nodeId);
-                        }
-                    } else {
-                        log.warn("No matching alarm found in DB for nodeId: {}", nodeId);
+                    if (cachedDtos != null) {
+                        Set<Integer> resolvedAlarmIds = alarmsToUpdate.stream()
+                            .map(EquipmentAlarmHistoryEntity::getEquipmentAlarmId)
+                            .collect(Collectors.toSet());
+
+                        cachedDtos.removeIf(dto -> resolvedAlarmIds.contains(dto.getEquipmentAlarmId()));
+
+                        cacheAlarmServiceInstance.redisTemplate.opsForValue().set(
+                            cacheAlarmServiceInstance.ACTIVE_ALARMS_KEY,
+                            cachedDtos,
+                            Duration.ofMinutes(1)
+                        );
                     }
                 }
-
-            } catch (Exception e) {
-                // Catch and log any exception to avoid crashing the loop
-                log.warn("Error processing nodeId {}: {}", nodeId, e.getMessage());
+            } catch (Exception ex) {
+                log.error("Error during DB or Redis update: {}", ex.getMessage(), ex);
             }
         }
     }
-    
+
  // Loads alarm detail definitions from JSON file (used to map nodeId to alarm metadata)
     private List<EquipmentAlarmDetails> loadAlarmDetailsFromJson() {
         try {
