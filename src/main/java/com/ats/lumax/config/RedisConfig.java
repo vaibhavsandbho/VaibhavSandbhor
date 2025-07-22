@@ -1,11 +1,15 @@
 package com.ats.lumax.config;
 
+import java.util.List;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
+import com.ats.lumax.Entity.ActiveequipmentalarmsviewEntity;
+import com.ats.lumax.Entity.Resolvedequipmentalarms;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
@@ -31,5 +35,26 @@ public class RedisConfig {
         template.afterPropertiesSet();
         return template;
     }
+    
+    @Bean
+    public RedisTemplate<String, List<ActiveequipmentalarmsviewEntity>> activeAlarmRedisTemplate(
+            RedisConnectionFactory connectionFactory) {
+        RedisTemplate<String, List<ActiveequipmentalarmsviewEntity>> template = new RedisTemplate<>();
+        template.setConnectionFactory(connectionFactory);
+        template.setKeySerializer(new StringRedisSerializer());
+        template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
+        return template;
+    }
+
+    @Bean
+    public RedisTemplate<String, List<Resolvedequipmentalarms>> resolvedAlarmRedisTemplate(
+            RedisConnectionFactory connectionFactory) {
+        RedisTemplate<String, List<Resolvedequipmentalarms>> template = new RedisTemplate<>();
+        template.setConnectionFactory(connectionFactory);
+        template.setKeySerializer(new StringRedisSerializer());
+        template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
+        return template;
+    }
 }
+
 

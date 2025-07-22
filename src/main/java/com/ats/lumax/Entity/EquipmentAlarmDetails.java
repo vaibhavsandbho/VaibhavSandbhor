@@ -54,6 +54,9 @@ public class EquipmentAlarmDetails {
 
     @Column(name = "equipment_alarm_is_deleted")
     private Boolean equipmentAlarmIsDeleted;
+    
+    @Column(name = "bit_number")
+    private int bitNo;
 
     
 }

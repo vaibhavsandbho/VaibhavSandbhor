@@ -3,6 +3,7 @@ package com.ats.lumax.service;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -22,8 +23,11 @@ public class EquipmentAlarmviewService {
 	private resolvedAlarmviewrepo resolvedAlarmviewrepoInstance;
 	
 	@Autowired
+	@Qualifier(value="activeAlarmRedisTemplate")
+	
 	private RedisTemplate<String, List<ActiveequipmentalarmsviewEntity>> redisTemplate;
 	@Autowired
+	@Qualifier(value="resolvedAlarmRedisTemplate")
 	private RedisTemplate<String,  List<Resolvedequipmentalarms>> redisTemplate1;
 
 

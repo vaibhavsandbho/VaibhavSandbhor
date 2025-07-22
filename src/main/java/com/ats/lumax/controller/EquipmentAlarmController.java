@@ -16,8 +16,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.eclipse.milo.opcua.stack.core.types.builtin.ByteString;
 import org.eclipse.milo.opcua.stack.core.types.builtin.DataValue;
+import org.eclipse.milo.opcua.stack.core.types.builtin.ExtensionObject;
 import org.eclipse.milo.opcua.stack.core.types.builtin.Variant;
+import org.hibernate.internal.build.AllowSysOut;
 import org.modelmapper.ModelMapper;
 
 import com.ats.lumax.Entity.EquipmentAlarmDetails;
@@ -113,7 +116,7 @@ public class EquipmentAlarmController {
         Thread thread = new Thread(() -> {
             while (running) {
                 try {
-                    readAndProcessValues();
+                	readAndProcessWordAlarmsFromWordTags();
                     Thread.sleep(1000); // Run every 1 second
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
@@ -138,15 +141,32 @@ public class EquipmentAlarmController {
      * 
      * This method uses an in-memory cache (alarmStates) to avoid repeated database writes and reduce load.
      */
-    
-    public void readAndProcessValues() {
-        Map<String, Object> nodeValues = predefinedNodeValueService.getAllValues();
+    public void readAndProcessWordAlarmsFromWordTags() {
+        log.info("Starting alarm processing from word tags");
+
+        Map<String, List<String>> allTags = predefinedNodeValueService.loadAllTagFiles();
+        Set<String> allNodeIds = allTags.values().stream()
+            .flatMap(List::stream)
+            .collect(Collectors.toSet());
+        
+        System.out.println("#0.1");
 
         List<EquipmentAlarmDetails> alarmDetailsList = loadAlarmDetailsFromJson();
         List<MasterEquipmentDetailsEntity> equipmentDetailsList = loadEquipmentDetailsFromJson();
 
-        Map<String, EquipmentAlarmDetails> alarmDetailsMap = alarmDetailsList.stream()
-            .collect(Collectors.toMap(e -> e.getEquipmentAlarmTag().replace("\"", ""), Function.identity()));
+        log.info("Loaded {} alarm details and {} equipment details for processing",
+            alarmDetailsList.size(), equipmentDetailsList.size());
+
+        // Create map: baseTag_bitNo → EquipmentAlarmDetails
+        Map<Object, EquipmentAlarmDetails> alarmDetailsMap = alarmDetailsList.stream()
+            .collect(Collectors.toMap(
+                e -> {
+                    String normalizedTag = e.getEquipmentAlarmTag().replace("\"", "");
+                    String baseTag = extractTagBase(normalizedTag); // remove .Alarm14, etc.
+                    return baseTag + "_" + e.getBitNo();
+                },
+                Function.identity()
+            ));
 
         Map<Integer, MasterEquipmentDetailsEntity> equipmentMap = equipmentDetailsList.stream()
             .collect(Collectors.toMap(MasterEquipmentDetailsEntity::getEquipmentId, Function.identity()));
@@ -154,124 +174,156 @@ public class EquipmentAlarmController {
         List<EquipmentAlarmHistoryEntity> alarmsToInsert = Collections.synchronizedList(new ArrayList<>());
         List<EquipmentAlarmHistoryEntity> alarmsToUpdate = Collections.synchronizedList(new ArrayList<>());
 
+        log.info("Processing {} OPC UA nodes for alarm state changes", allNodeIds.size());
+
         try {
-            nodeValues.keySet().parallelStream().forEach(nodeId -> {
+           
+            allNodeIds.parallelStream().forEach(nodeId -> {
                 try {
-                    Optional<DataValue> valueOpt = opcUaService.readValue(nodeId);
-                    if (valueOpt.isEmpty()) return;
-
-                    DataValue dataValue = valueOpt.get();
-                    Object result = dataValue.getValue() != null ? dataValue.getValue().getValue() : null;
-                    boolean isTrue = result instanceof Boolean && (Boolean) result;
-
-                    String normalizedNodeId = nodeId.replace("\"", "");
-                    String redisKey = "alarmState:" + normalizedNodeId;
-
-                    String cachedState = redisTemplate.opsForValue().get(redisKey);
-                    boolean wasPreviouslyActive = cachedState != null && Boolean.parseBoolean(cachedState);
-
-                    String now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-
-                    if (isTrue && !wasPreviouslyActive) {
-                        log.info("Alarm activated for nodeId: {}", nodeId);
-                        redisTemplate.opsForValue().set(redisKey, "true");
-
-                        EquipmentAlarmDetails alarmDetail = alarmDetailsMap.get(normalizedNodeId);
-                        if (alarmDetail == null) return;
-
-                        MasterEquipmentDetailsEntity equipment = equipmentMap.get(alarmDetail.getEquipmentId());
-                        if (equipment == null) return;
-
-                        EquipmentAlarmHistoryEntity alarm = new EquipmentAlarmHistoryEntity();
-                        alarm.setEquipmentAlarmName(alarmDetail.getEquipmentAlarmName());
-                        alarm.setEquipmentAlarmDesc(alarmDetail.getEquipmentAlarmDesc());
-                        alarm.setEquipmentAlarmId(alarmDetail.getEquipmentAlarmId());
-                        alarm.setEquipmentId(equipment.getEquipmentId());
-                        alarm.setEquipmentName(equipment.getEquipmentName());
-                        alarm.setEquipmentDesc(equipment.getEquipmentDesc());
-                        alarm.setAlarmOccurredDatetime(now);
-                        alarm.setAlarmResolvedDatetime("NA");
-                        alarm.setEquipmentAlarmStatus(true);
-
-                        alarmsToInsert.add(alarm);
-
-                    } else if (!isTrue && wasPreviouslyActive) {
-                        log.info("Alarm resolved for nodeId: {}", nodeId);
-                        redisTemplate.opsForValue().set(redisKey, "false");
-
-                        EquipmentAlarmDetails alarmDetails = alarmDetailsMap.get(normalizedNodeId);
-                        if (alarmDetails == null) return;
-
-                        EquipmentAlarmHistoryEntity history = equipmentHistoryrepo.findbyequipmentAlarmId(alarmDetails.getEquipmentAlarmId());
-                        if (history == null || !history.getEquipmentAlarmStatus()) return;
-
-                        history.setAlarmResolvedDatetime(now);
-                        history.setEquipmentAlarmStatus(false);
-
-                        alarmsToUpdate.add(history);
+                	 System.out.println("#0.2");
+                	 Optional<DataValue> alarmWordOpt = opcUaService.readValue(nodeId);
+                    
+                  
+                    if (!alarmWordOpt.isPresent()) {
+                    	
+                    	
+                        log.debug("No data value present for node: {}", nodeId);
+                        return;
                     }
+              
+                    Object alarmWordObj = alarmWordOpt.get().getValue().getValue();
+                    
+                    System.out.println("alarmWordObj"+alarmWordObj);
+                  
+                    if (!(alarmWordObj instanceof ExtensionObject)) {
+                        log.debug("Node {} does not contain ExtensionObject, skipping", nodeId);
+                        return;
+                    }    System.out.println("#0.4");
 
+                    ExtensionObject extObj = (ExtensionObject) alarmWordObj;
+                    Object body = extObj.getBody();
+
+                    if (!(body instanceof ByteString)) {
+                        log.debug("ExtensionObject body is not ByteString for node: {}", nodeId);
+                        return;
+                    }    System.out.println("#0.5");
+
+                    byte[] bytes = ((ByteString) body).bytes();
+                    log.debug("Processing {} bytes from node: {}", bytes.length, nodeId);
+
+                    String baseNodeId = nodeId.replace("\"", "");
+
+                    for (int byteIndex = 0; byteIndex < bytes.length; byteIndex++) {
+                        byte currentByte = bytes[byteIndex];
+                        
+
+                        for (int bit = 0; bit < 8; bit++) {
+                        	System.out.println("bit"+bit);
+                            boolean isActive = ((currentByte >> bit) & 1) == 1;
+                            int actualBitIndex = byteIndex * 8 + bit;
+                            String alarmKey = baseNodeId + "_" + actualBitIndex;
+                            String redisKey = "alarmState:" + alarmKey;
+                            
+                            System.out.println("alarmKey"+alarmKey);
+
+                            EquipmentAlarmDetails alarmDetail = alarmDetailsMap.get(alarmKey);
+                            
+                            System.out.println("alarmDetail"+alarmDetail);
+                            if (alarmDetail == null) {
+                                log.trace("No alarm detail found for key: {}", alarmKey);
+                                continue;
+                            }
+System.out.println("#0.6");
+                            MasterEquipmentDetailsEntity equipment = equipmentMap.get(alarmDetail.getEquipmentId());
+                            if (equipment == null) {
+                                log.warn("No equipment found for ID: {} (alarm: {})",
+                                    alarmDetail.getEquipmentId(), alarmDetail.getEquipmentAlarmName());
+                                continue;
+                            }
+                            System.out.println("#0.7");
+
+                            String cachedState = redisTemplate.opsForValue().get(redisKey);
+                            boolean wasPreviouslyActive = cachedState != null && Boolean.parseBoolean(cachedState);
+                            String now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+
+                            if (isActive) { // Alarm is ACTIVE
+                                if (!wasPreviouslyActive) {
+                                    EquipmentAlarmHistoryEntity newAlarm = new EquipmentAlarmHistoryEntity();
+                                    newAlarm.setEquipmentAlarmName(alarmDetail.getEquipmentAlarmName());
+                                    newAlarm.setEquipmentAlarmDesc(alarmDetail.getEquipmentAlarmDesc());
+                                    newAlarm.setEquipmentAlarmId(alarmDetail.getEquipmentAlarmId());
+                                    newAlarm.setEquipmentId(equipment.getEquipmentId());
+                                    newAlarm.setEquipmentName(equipment.getEquipmentName());
+                                    newAlarm.setEquipmentDesc(equipment.getEquipmentDesc());
+                                    newAlarm.setAlarmOccurredDatetime(now);
+                                    newAlarm.setAlarmResolvedDatetime("NA");
+                                    newAlarm.setEquipmentAlarmStatus(true);
+                                    System.out.println("#0.8");
+                                    redisTemplate.opsForValue().set(redisKey, "true");
+                                    alarmsToInsert.add(newAlarm);
+
+                                    log.info("New alarm activated - Equipment: {}, Alarm: {}, Time: {}",
+                                        equipment.getEquipmentName(), alarmDetail.getEquipmentAlarmName(), now);
+                                } else {
+                                    log.debug("Alarm already active (duplicate prevented) - Equipment: {}, Alarm: {}",
+                                        equipment.getEquipmentName(), alarmDetail.getEquipmentAlarmName());
+                                }
+                            } else { // Alarm is RESOLVED
+                                if (wasPreviouslyActive) {
+                                    EquipmentAlarmHistoryEntity history =
+                                        equipmentHistoryrepo.findByEquipmentAlarmIdAndEquipmentAlarmStatusTrue(alarmDetail.getEquipmentAlarmId());
+                                    System.out.println("#0.9");
+                                    if (history != null) {
+                                        history.setAlarmResolvedDatetime(now);
+                                        history.setEquipmentAlarmStatus(false);
+
+                                        redisTemplate.opsForValue().set(redisKey, "false");
+                                        alarmsToUpdate.add(history);
+
+                                        log.info("Alarm resolved - Equipment: {}, Alarm: {}, Duration: {} to {}",
+                                            equipment.getEquipmentName(), alarmDetail.getEquipmentAlarmName(),
+                                            history.getAlarmOccurredDatetime(), now);
+                                    } else {
+                                        log.warn("No active alarm history found for resolution - Equipment: {}, Alarm: {}",
+                                            equipment.getEquipmentName(), alarmDetail.getEquipmentAlarmName());
+                                    }
+                                } else {
+                                    log.trace("Alarm already resolved or never was active - Equipment: {}, Alarm: {}",
+                                        equipment.getEquipmentName(), alarmDetail.getEquipmentAlarmName());
+                                }
+                            }
+                        }
+                    }
                 } catch (Exception e) {
-                    log.warn("Error processing nodeId {}: {}", nodeId, e.getMessage());
+                    log.error("Error processing alarm data for node: {} - Error: {}", nodeId, e.getMessage(), e);
                 }
             });
         } finally {
             try {
                 if (!alarmsToInsert.isEmpty()) {
+                	System.out.println("#0.10");
                     equipmentHistoryrepo.saveAll(alarmsToInsert);
-                    log.info("Inserted {} new alarms", alarmsToInsert.size());
-
-                    List<EquipmentAlarmHistoryDto> cachedDtos =
-                        (List<EquipmentAlarmHistoryDto>) cacheAlarmServiceInstance.redisTemplate.opsForValue().get(cacheAlarmServiceInstance.ACTIVE_ALARMS_KEY);
-
-                    if (cachedDtos == null) {
-                        cachedDtos = new ArrayList<>();
-                    }
-
-                    Set<Integer> existingAlarmIds = cachedDtos.stream()
-                        .map(EquipmentAlarmHistoryDto::getEquipmentAlarmId)
-                        .collect(Collectors.toSet());
-
-                    List<EquipmentAlarmHistoryDto> newDtos = alarmsToInsert.stream()
-                        .filter(a -> !existingAlarmIds.contains(a.getEquipmentAlarmId()))
-                        .map(a -> modelMapper.map(a, EquipmentAlarmHistoryDto.class))
-                        .collect(Collectors.toList());
-
-                    cachedDtos.addAll(newDtos);
-
-                    cacheAlarmServiceInstance.redisTemplate.opsForValue().set(
-                        cacheAlarmServiceInstance.ACTIVE_ALARMS_KEY,
-                        cachedDtos,
-                        Duration.ofMinutes(1)
-                    );
+                    log.info("Successfully inserted {} new alarm records into database", alarmsToInsert.size());
+                    updateActiveAlarmCache(alarmsToInsert, true);
                 }
 
                 if (!alarmsToUpdate.isEmpty()) {
+                	System.out.println("#0.11");
                     equipmentHistoryrepo.saveAll(alarmsToUpdate);
-                    log.info("Updated {} resolved alarms", alarmsToUpdate.size());
-
-                    List<EquipmentAlarmHistoryDto> cachedDtos =
-                        (List<EquipmentAlarmHistoryDto>) cacheAlarmServiceInstance.redisTemplate.opsForValue().get(cacheAlarmServiceInstance.ACTIVE_ALARMS_KEY);
-
-                    if (cachedDtos != null) {
-                        Set<Integer> resolvedAlarmIds = alarmsToUpdate.stream()
-                            .map(EquipmentAlarmHistoryEntity::getEquipmentAlarmId)
-                            .collect(Collectors.toSet());
-
-                        cachedDtos.removeIf(dto -> resolvedAlarmIds.contains(dto.getEquipmentAlarmId()));
-
-                        cacheAlarmServiceInstance.redisTemplate.opsForValue().set(
-                            cacheAlarmServiceInstance.ACTIVE_ALARMS_KEY,
-                            cachedDtos,
-                            Duration.ofMinutes(1)
-                        );
-                    }
+                    log.info("Successfully updated {} resolved alarm records in database", alarmsToUpdate.size());
+                    updateActiveAlarmCache(alarmsToUpdate, false);
                 }
+
+                log.info("Alarm processing completed successfully - New alarms: {}, Resolved alarms: {}",
+                    alarmsToInsert.size(), alarmsToUpdate.size());
+
             } catch (Exception ex) {
-                log.error("Error during DB or Redis update: {}", ex.getMessage(), ex);
+                log.error("Critical error during database or Redis operations: {}", ex.getMessage(), ex);
+                throw new RuntimeException("Failed to persist alarm data", ex);
             }
         }
     }
+
 
  // Loads alarm detail definitions from JSON file (used to map nodeId to alarm metadata)
     private List<EquipmentAlarmDetails> loadAlarmDetailsFromJson() {
@@ -292,6 +344,28 @@ public class EquipmentAlarmController {
         } catch (Exception e) {
             log.error("Failed to load EquipmentDeatails.json", e);
             return Collections.emptyList();
+        }
+    }
+    private String extractTagBase(String tag) {
+        if (tag == null || tag.isEmpty()) return tag;
+
+        // Remove suffix after last dot if it starts with "Alarm" followed by a number
+        int lastDotIndex = tag.lastIndexOf('.');
+        if (lastDotIndex != -1 && lastDotIndex < tag.length() - 1) {
+            String suffix = tag.substring(lastDotIndex + 1);
+            if (suffix.matches("Alarm\\d+")) {
+                return tag.substring(0, lastDotIndex);
+            }
+        }
+        return tag;
+    }
+    private void updateActiveAlarmCache(List<EquipmentAlarmHistoryEntity> alarmsToUpdate, boolean isActive) {
+        try {
+            String redisKey = "alarmState:" + alarmsToUpdate;
+            redisTemplate.opsForValue().set(redisKey, String.valueOf(isActive));
+            log.debug("Updated Redis cache for key: {} to state: {}", redisKey, isActive);
+        } catch (Exception e) {
+            log.error("Failed to update Redis cache for alarmKey: {}, Error: {}", alarmsToUpdate, e.getMessage(), e);
         }
     }
 

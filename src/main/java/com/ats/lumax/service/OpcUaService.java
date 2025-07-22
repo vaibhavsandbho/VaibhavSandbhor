@@ -203,15 +203,21 @@ public class OpcUaService {
     }
 
     public Optional<DataValue> readValue(String identifier) {
-        try {
-        
-            DataValue value = client.readValue(0.0, TimestampsToReturn.Both, NodeId.parse(identifier)).get();
-            return Optional.ofNullable(value);
-        } catch (Exception e) {
-            log.error("Error reading value for identifier: {}", identifier, e);
-            return Optional.empty();
-        }
+    	 try {
+    	        
+         	
+     
+             DataValue value = client.readValue(0.0, TimestampsToReturn.Both, NodeId.parse(identifier)).get();
+             
+             System.out.println("value"+NodeId.parse(identifier));
+             System.out.println("main value"+value);
+             return Optional.ofNullable(value);
+         } catch (Exception e) {
+             log.error("Error reading value for identifier: {}", identifier, e);
+             return Optional.empty();
+         }
     }
+    
 
     public List<String> browseTags(String startingNode) {
         try {
@@ -405,7 +411,7 @@ public class OpcUaService {
     }
     
     
-@PostConstruct
+
     public void saveDataFormDb() {
         try {
             List<EquipmentAlarmDetails> list = equipmentAlarmDetailsRepo.findAll();
