@@ -12,18 +12,16 @@ spring:
     show-sql: true
     
     services:
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
   app:
     build: .
     depends_on:
       - redis
     environment:
       SPRING_REDIS_HOST: redis
-  data:
-   redis:
-     host: localhost
-     port: 6379
-     timeout: 60000   # Optional: timeout in ms
- 
 server:
   port: 8090
   servlet:
@@ -33,7 +31,7 @@ server:
 plc:
   opc-ua:
     enabled: true
-    server-url: "opc.tcp://192.168.24.1/4840"
+    server-url: "opc.tcp://192.168.103.24/4840"
     security-policy: "None"
     username: ""
     password: ""

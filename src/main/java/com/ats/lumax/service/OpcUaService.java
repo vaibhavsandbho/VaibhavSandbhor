@@ -43,6 +43,8 @@ import com.google.common.collect.ImmutableList;
 @Slf4j
 public class OpcUaService {
     private final PlcConfiguration plcConfig;
+    
+  
     private OpcUaClient client;
     @Autowired
     private EquipmetAlarmDetailsRepo equipmentAlarmDetailsRepo;
@@ -55,9 +57,12 @@ public class OpcUaService {
     @Autowired
     public OpcUaService(PlcConfiguration plcConfig, 
 //                       KafkaBrowseService kafkaBrowseService,
-                       OpcUaValueConverter valueConverter) {
+                       OpcUaValueConverter valueConverter
+                        ) {
         this.plcConfig = plcConfig;
 //        this.kafkaBrowseService = kafkaBrowseService;
+        
+     
         this.valueConverter = valueConverter;
     }
 
@@ -205,12 +210,8 @@ public class OpcUaService {
     public Optional<DataValue> readValue(String identifier) {
     	 try {
     	        
-         	
-     
-             DataValue value = client.readValue(0.0, TimestampsToReturn.Both, NodeId.parse(identifier)).get();
-             
-             System.out.println("value"+NodeId.parse(identifier));
-             System.out.println("main value"+value);
+         	 DataValue value = client.readValue(0.0, TimestampsToReturn.Both, NodeId.parse(identifier)).get();
+         	 System.out.println("value"+value);
              return Optional.ofNullable(value);
          } catch (Exception e) {
              log.error("Error reading value for identifier: {}", identifier, e);
