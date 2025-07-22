@@ -1,0 +1,81 @@
+spring:
+  application:
+    name: plc-integration
+  datasource:
+    url: jdbc:postgresql://localhost:5432/ats_mahindra_db
+    username: postgres
+    password: root
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update # Options: validate / create / create-drop
+    show-sql: true
+    
+    services:
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+  app:
+    build: .
+    depends_on:
+      - redis
+    environment:
+      SPRING_REDIS_HOST: redis
+server:
+  port: 8090
+  servlet:
+    connection-timeout: 60s
+
+
+plc:
+  opc-ua:
+    enabled: true
+    server-url: "opc.tcp://192.168.103.24/4840"
+    security-policy: "None"
+    username: ""
+    password: ""
+    connection-timeout: 5000
+    max-reconnect-attempts: 3
+    reconnect-delay: 5000
+  tags:
+    - name: "Tag1"
+      identifier: "ns=0;i=2253"
+      dataType: "Object"
+    - name: "Tag2"
+      identifier: "ns=2;i=5001"
+      dataType: "Object"
+    - name: "PLC"
+      identifier: "ns=3;s=PLC"
+      dataType: "Object"
+  telegrams:
+    - name: "ProductionData"
+      identifier: "ns=2;s=Telegram_Production"
+      dataType: "ByteString"
+      length: 100
+      format: "Binary"
+      isArray: true
+    - name: "MachineStatus"
+      identifier: "ns=2;s=Telegram_Status"
+      dataType: "String"
+      length: 50
+      format: "ASCII"
+      isArray: false
+    - name: "ProcessValues"
+      identifier: "ns=2;s=Telegram_Process"
+      dataType: "ByteString"
+      length: 200
+      format: "Binary"
+      isArray: true
+  writer:
+    enabled: false
+    interval: 5000
+    node-id: 'ns=3;s="Lumax WMS<>PLC"."STACKER_1_MISSION_PALLET_CODE"'
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+logging:
+  level:
+    com.ats.plc: DEBUG
+    org.eclipse.milo: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
