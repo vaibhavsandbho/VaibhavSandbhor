@@ -21,5 +21,5 @@ public class EquipmentAlarmServiceApplication {
     {
     	return new ModelMapper();
     }
-}
+} 
 

@@ -211,7 +211,7 @@ public class OpcUaService {
     	 try {
     	        
          	 DataValue value = client.readValue(0.0, TimestampsToReturn.Both, NodeId.parse(identifier)).get();
-         	 System.out.println("value"+value);
+         	
              return Optional.ofNullable(value);
          } catch (Exception e) {
              log.error("Error reading value for identifier: {}", identifier, e);
@@ -412,7 +412,7 @@ public class OpcUaService {
     }
     
     
-
+@PostConstruct
     public void saveDataFormDb() {
         try {
             List<EquipmentAlarmDetails> list = equipmentAlarmDetailsRepo.findAll();
@@ -428,7 +428,7 @@ public class OpcUaService {
             e.printStackTrace();
         }
     }
-    @PostConstruct
+    
     public void saveEquipmentDetails() throws StreamWriteException, DatabindException, IOException
     {
     	 

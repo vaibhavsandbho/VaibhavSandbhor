@@ -149,7 +149,6 @@ public class EquipmentAlarmController {
             .flatMap(List::stream)
             .collect(Collectors.toSet());
         
-        System.out.println("#0.1");
 
         List<EquipmentAlarmDetails> alarmDetailsList = loadAlarmDetailsFromJson();
         List<MasterEquipmentDetailsEntity> equipmentDetailsList = loadEquipmentDetailsFromJson();
@@ -157,16 +156,33 @@ public class EquipmentAlarmController {
         log.info("Loaded {} alarm details and {} equipment details for processing",
             alarmDetailsList.size(), equipmentDetailsList.size());
 
-        // Create map: baseTag_bitNo → EquipmentAlarmDetails
+        // Fixed map creation - use base tag consistently
         Map<String, EquipmentAlarmDetails> alarmDetailsMap = alarmDetailsList.stream()
+            .filter(e -> e.getEquipmentAlarmTag() != null)
             .collect(Collectors.toMap(
-                e -> {
-                    String normalizedTag = e.getEquipmentAlarmTag().replace("\"", "");
-                    String baseTag = extractTagBase(normalizedTag); // remove .Alarm14, etc.
-                    return baseTag + "_" + e.getBitNo();
-                },
-                Function.identity()
-            ));
+            	    e -> {
+            	        String normalizedTag = e.getEquipmentAlarmTag().replace("\"", "").trim();
+            	        String baseTag = extractTagBase(normalizedTag);
+            	        String key = baseTag + "_" + e.getBitNo();
+            	    
+            	       
+            	        return key;
+            	        
+            	       
+            	    },
+            	    Function.identity(),
+            	    (existing, replacement) -> {
+            	        log.warn("Duplicate alarm key found, keeping existing: {}", existing.getEquipmentAlarmName());
+            	        return existing;
+            	    }
+            	));
+
+        
+    
+
+        // Debug: Print all keys in the map
+        log.info("Created alarm details map with {} entries", alarmDetailsMap.size());
+        alarmDetailsMap.keySet().forEach(key -> log.debug("Map key: {}", key));
 
         Map<Integer, MasterEquipmentDetailsEntity> equipmentMap = equipmentDetailsList.stream()
             .collect(Collectors.toMap(MasterEquipmentDetailsEntity::getEquipmentId, Function.identity()));
@@ -177,9 +193,12 @@ public class EquipmentAlarmController {
         log.info("Processing {} OPC UA nodes for alarm state changes", allNodeIds.size());
 
         try {
+        	
+        
             allNodeIds.parallelStream().forEach(nodeId -> {
                 try {
-                    System.out.println("#0.2");
+                	
+                   
                     Optional<DataValue> alarmWordOpt = opcUaService.readValue(nodeId);
                     
                     if (!alarmWordOpt.isPresent()) {
@@ -198,7 +217,6 @@ public class EquipmentAlarmController {
                     ExtensionObject extObj = (ExtensionObject) alarmWordObj;
                     Object body = extObj.getBody();
                     
-                    System.out.println(body);
 
                     if (!(body instanceof ByteString)) {
                         log.debug("ExtensionObject body is not ByteString for node: {}", nodeId);
@@ -212,18 +230,38 @@ public class EquipmentAlarmController {
                     for (int i = 0; i < bytes.length; i++) {
                         byte b = bytes[i];
                         
-                        if ((b & 0xFF) != 0) {
-                            System.out.println("ON" + i);
-                        }
                         
+                      
+                      
+                       
                         // Apply the SAME extraction logic as in map creation
-                        String normalizedNodeId = nodeId.replace("\"", "");
-                        String baseTag = extractTagBase(normalizedNodeId); // Use same method!
-                        String alarmKey = baseTag + "_" + i;
+                        String normalizedNodeId = nodeId.replace("\"", "");;
+                        
+                       
+//                        String baseTag = extractTagBase(normalizedNodeId); // Use same method!
+            
+                        // Use the same key construction logic as in map creation
+                        
+                      
+                        String alarmKey = normalizedNodeId + "_" + i;
                         String redisKey = "alarmState:" + alarmKey;
+                        
+                   
+                        
+                     
+                        log.debug("Looking for alarm key: {} (from nodeId: {}, bitIndex: {})", alarmKey, nodeId, i);
+                        
+                      
 
                         EquipmentAlarmDetails alarmDetail = alarmDetailsMap.get(alarmKey);
                         
+                        
+                        if(i==6)
+                        {
+                        	
+                        	System.out.println("alarmkey"+alarmKey);
+                        	System.out.println("alarmKey"+alarmDetail);
+                        }
                         if (alarmDetail == null) {
                             log.trace("No alarm detail found for key: {}", alarmKey);
                             continue;
@@ -235,13 +273,17 @@ public class EquipmentAlarmController {
                                 alarmDetail.getEquipmentId(), alarmDetail.getEquipmentAlarmName());
                             continue;
                         }
-                        
+
                         // Get cached state to check if alarm was previously active
                         String cachedState = redisTemplate.opsForValue().get(redisKey);
                         boolean wasPreviouslyActive = cachedState != null && Boolean.parseBoolean(cachedState);
                         
                         String now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
                         
+                        if ((b & 0xFF) != 0) {
+                            System.out.println("ALARM ON - Bit index: " + i + ", AlarmKey: " + alarmKey);
+                        }
+             
                         if ((b & 0xFF) != 0) { // Alarm is currently ACTIVE
                             System.out.println("#0.8");
                             if (!wasPreviouslyActive) {
@@ -255,7 +297,7 @@ public class EquipmentAlarmController {
                                 newAlarm.setAlarmOccurredDatetime(now);
                                 newAlarm.setAlarmResolvedDatetime("NA");
                                 newAlarm.setEquipmentAlarmStatus(true);
-                                System.out.println("alarmkey" + alarmKey);
+                                System.out.println("New alarm created for alarmkey: " + alarmKey);
                                 
                                 // Update cache to mark as active
                                 redisTemplate.opsForValue().set(redisKey, "true");
@@ -326,6 +368,17 @@ public class EquipmentAlarmController {
             }
         }
     }
+
+    private String extractTagBase(String normalizedTag) {
+        // Example input: ns=3;s=8.PLC_TO_WMS_MCP_Alarms.CH06.Alarm14
+        // Should return: ns=3;s=8.PLC_TO_WMS_MCP_Alarms.CH06
+
+        int lastDotIndex = normalizedTag.lastIndexOf(".");
+        if (lastDotIndex > 0) {
+            return normalizedTag.substring(0, lastDotIndex); // remove .AlarmX or .Forward Send Time Out
+        }
+        return normalizedTag;
+    }
  // Loads alarm detail definitions from JSON file (used to map nodeId to alarm metadata)
     private List<EquipmentAlarmDetails> loadAlarmDetailsFromJson() {
         try {
@@ -347,19 +400,19 @@ public class EquipmentAlarmController {
             return Collections.emptyList();
         }
     }
-    private String extractTagBase(String tag) {
-        if (tag == null || tag.isEmpty()) return tag;
-
-        // Remove suffix after last dot if it starts with "Alarm" followed by a number
-        int lastDotIndex = tag.lastIndexOf('.');
-        if (lastDotIndex != -1 && lastDotIndex < tag.length() - 1) {
-            String suffix = tag.substring(lastDotIndex + 1);
-            if (suffix.matches("Alarm\\d+")) {
-                return tag.substring(0, lastDotIndex);
-            }
-        }
-        return tag;
-    }
+//    private String extractTagBase(String tag) {
+//        if (tag == null || tag.isEmpty()) return tag;
+//
+//        // Remove suffix after last dot if it starts with "Alarm" followed by a number
+//        int lastDotIndex = tag.lastIndexOf('.');
+//        if (lastDotIndex != -1 && lastDotIndex < tag.length() - 1) {
+//            String suffix = tag.substring(lastDotIndex + 1);
+//            if (suffix.matches("Alarm\\d+")) {
+//                return tag.substring(0, lastDotIndex);
+//            }
+//        }
+//        return tag;
+//    }
     private void updateActiveAlarmCache(List<EquipmentAlarmHistoryEntity> alarmsToUpdate, boolean isActive) {
         try {
             String redisKey = "alarmState:" + alarmsToUpdate;
