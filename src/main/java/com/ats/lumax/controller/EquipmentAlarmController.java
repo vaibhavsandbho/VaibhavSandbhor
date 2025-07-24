@@ -10,6 +10,7 @@ import java.util.*;
 import java.util.function.Function;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -256,12 +257,7 @@ public class EquipmentAlarmController {
                         EquipmentAlarmDetails alarmDetail = alarmDetailsMap.get(alarmKey);
                         
                         
-                        if(i==6)
-                        {
-                        	
-                        	System.out.println("alarmkey"+alarmKey);
-                        	System.out.println("alarmKey"+alarmDetail);
-                        }
+                       
                         if (alarmDetail == null) {
                             log.trace("No alarm detail found for key: {}", alarmKey);
                             continue;
@@ -273,10 +269,9 @@ public class EquipmentAlarmController {
                                 alarmDetail.getEquipmentId(), alarmDetail.getEquipmentAlarmName());
                             continue;
                         }
-
-                        // Get cached state to check if alarm was previously active
                         String cachedState = redisTemplate.opsForValue().get(redisKey);
                         boolean wasPreviouslyActive = cachedState != null && Boolean.parseBoolean(cachedState);
+                      //= status != null && Boolean.parseBoolean(status);
                         
                         String now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
                         
@@ -301,6 +296,7 @@ public class EquipmentAlarmController {
                                 
                                 // Update cache to mark as active
                                 redisTemplate.opsForValue().set(redisKey, "true");
+                             
                                 alarmsToInsert.add(newAlarm);
                                 
                                 log.info("New alarm activated - Equipment: {}, Alarm: {}, Time: {}", 
@@ -348,15 +344,52 @@ public class EquipmentAlarmController {
                 if (!alarmsToInsert.isEmpty()) {
                     System.out.println("#0.11");
                     equipmentHistoryrepo.saveAll(alarmsToInsert);
-                    log.info("Successfully inserted {} new alarm records into database", alarmsToInsert.size());
-                    updateActiveAlarmCache(alarmsToInsert, true);
+                    List<EquipmentAlarmHistoryDto> cachedDtos =
+                            (List<EquipmentAlarmHistoryDto>) cacheAlarmServiceInstance.redisTemplate.opsForValue()
+                                .get(cacheAlarmServiceInstance.ACTIVE_ALARMS_KEY);
+
+                        if (cachedDtos == null) {
+                            cachedDtos = new ArrayList<>();
+                        }
+
+                        Set<Integer> existingAlarmIds = cachedDtos.stream()
+                            .map(EquipmentAlarmHistoryDto::getEquipmentAlarmId)
+                            .collect(Collectors.toSet());
+
+                        List<EquipmentAlarmHistoryDto> newDtos = alarmsToInsert.stream()
+                            .filter(a -> !existingAlarmIds.contains(a.getEquipmentAlarmId()))
+                            .map(a -> modelMapper.map(a, EquipmentAlarmHistoryDto.class))
+                            .collect(Collectors.toList());
+
+                        cachedDtos.addAll(newDtos);
+
+                        cacheAlarmServiceInstance.redisTemplate.opsForValue().set(
+                            cacheAlarmServiceInstance.ACTIVE_ALARMS_KEY,
+                            cachedDtos
+                            
+                        );
                 }
 
                 if (!alarmsToUpdate.isEmpty()) {
                     System.out.println("#0.12");
                     equipmentHistoryrepo.saveAll(alarmsToUpdate);
-                    log.info("Successfully updated {} resolved alarm records in database", alarmsToUpdate.size());
-                    updateActiveAlarmCache(alarmsToUpdate, false);
+                    List<EquipmentAlarmHistoryDto> cachedDtos =
+                            (List<EquipmentAlarmHistoryDto>) cacheAlarmServiceInstance.redisTemplate.opsForValue()
+                                .get(cacheAlarmServiceInstance.ACTIVE_ALARMS_KEY);
+
+                        if (cachedDtos != null) {
+                            Set<Integer> resolvedAlarmIds = alarmsToUpdate.stream()
+                                .map(EquipmentAlarmHistoryEntity::getEquipmentAlarmId)
+                                .collect(Collectors.toSet());
+
+                            cachedDtos.removeIf(dto -> resolvedAlarmIds.contains(dto.getEquipmentAlarmId()));
+
+                            cacheAlarmServiceInstance.redisTemplate.opsForValue().set(
+                                cacheAlarmServiceInstance.RESOLVED_ALARMS_KEY,
+                                cachedDtos
+                                
+                            );
+                        }
                 }
 
                 log.info("Alarm processing completed successfully - New alarms: {}, Resolved alarms: {}", 
@@ -415,9 +448,18 @@ public class EquipmentAlarmController {
 //    }
     private void updateActiveAlarmCache(List<EquipmentAlarmHistoryEntity> alarmsToUpdate, boolean isActive) {
         try {
-            String redisKey = "alarmState:" + alarmsToUpdate;
-            redisTemplate.opsForValue().set(redisKey, String.valueOf(isActive));
-            log.debug("Updated Redis cache for key: {} to state: {}", redisKey, isActive);
+        	for (EquipmentAlarmHistoryEntity alarm : alarmsToUpdate) {
+        		
+        		
+        		
+        	    String redisKey = "alarmState:" + alarm.getEquipmentAlarmId();
+        	    if(!alarm.getEquipmentAlarmStatus())
+        		{
+        			  cacheAlarmServiceInstance.redisTemplate.delete(redisKey);
+        		}
+        	    
+        	}
+            
         } catch (Exception e) {
             log.error("Failed to update Redis cache for alarmKey: {}, Error: {}", alarmsToUpdate, e.getMessage(), e);
         }
