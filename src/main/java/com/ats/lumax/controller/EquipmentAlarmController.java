@@ -164,22 +164,19 @@ public class EquipmentAlarmController {
             	    e -> {
             	        String normalizedTag = e.getEquipmentAlarmTag().replace("\"", "").trim();
             	        String baseTag = extractTagBase(normalizedTag);
-            	        String key = baseTag + "_" + e.getBitNo();
-            	    
-            	       
-            	        return key;
+            	        return baseTag + "_" + e.getBitNo();
+            	        
+            	        
             	        
             	       
             	    },
             	    Function.identity(),
             	    (existing, replacement) -> {
-            	        log.warn("Duplicate alarm key found, keeping existing: {}", existing.getEquipmentAlarmName());
+            	       
             	        return existing;
             	    }
             	));
 
-        
-    
 
         // Debug: Print all keys in the map
         log.info("Created alarm details map with {} entries", alarmDetailsMap.size());
@@ -199,8 +196,11 @@ public class EquipmentAlarmController {
             allNodeIds.parallelStream().forEach(nodeId -> {
                 try {
                 	
-                   
-                    Optional<DataValue> alarmWordOpt = opcUaService.readValue(nodeId);
+   
+                	System.out.println("nodeId"+nodeId);
+                
+                	Optional<DataValue> alarmWordOpt = opcUaService.readValue(nodeId);
+
                     
                     if (!alarmWordOpt.isPresent()) {
                         log.debug("No data value present for node: {}", nodeId);
@@ -209,78 +209,114 @@ public class EquipmentAlarmController {
               
                     Object alarmWordObj = alarmWordOpt.get().getValue().getValue();
                     
+             
+                  
+                    
                     if (!(alarmWordObj instanceof ExtensionObject)) {
+                    	
+                    
                         log.debug("Node {} does not contain ExtensionObject, skipping", nodeId);
                         return;
                     }
                     
-                    System.out.println("#0.4");
+             
                     ExtensionObject extObj = (ExtensionObject) alarmWordObj;
                     Object body = extObj.getBody();
                     
+                   
+           
 
                     if (!(body instanceof ByteString)) {
+                    	
+                    	
                         log.debug("ExtensionObject body is not ByteString for node: {}", nodeId);
                         return;
                     }
                     
-                    System.out.println("#0.5");
+               
                     byte[] bytes = ((ByteString) body).bytes();
+                    
+            
                     log.debug("Processing {} bytes from node: {}", bytes.length, nodeId);
                     
                     for (int i = 0; i < bytes.length; i++) {
                         byte b = bytes[i];
                         
+                     
+                        System.out.println("9.1");
+                        String normalizedNodeId = nodeId;
+               normalizedNodeId = nodeId.replace("\"", ""); // Strip quotes
+               normalizedNodeId = extractTagBase(nodeId.replace("\"", ""));
                         
-                      
-                      
-                       
-                        // Apply the SAME extraction logic as in map creation
-                        String normalizedNodeId = nodeId.replace("\"", "");;
-                        
-                       
-//                        String baseTag = extractTagBase(normalizedNodeId); // Use same method!
-            
+////                        System.out.println("normalizedNodeId"+normalizedNodeId);
+//
+//                     // Remove outer quotes only for s=8
+//                     if (nodeId.startsWith("ns=3;s=\"8.")) {
+//                       
+//                         System.out.println("Normalized (s=8) nodeId: " + normalizedNodeId);
+//                         normalizedNodeId = nodeId.replace("\"", ""); // Strip quotes
+//                     }
+//                     // Apply extractTagBase only for s=3
+//                     else if (
+//                    		    nodeId.startsWith("ns=3;s=\"3.") ||
+//                    		    nodeId.startsWith("ns=3;s=\"5.")
+//                    		) {
+//                    	 
+//                    	 System.out.println("#77777777787");
+//                    	    // Use extractTagBase after removing quotes
+//                    	    normalizedNodeId = extractTagBase(nodeId.replace("\"", ""));
+//                    	    System.out.println("Using extractTagBase for nodeId: " + normalizedNodeId);
+//                    	}
+////            
                         // Use the same key construction logic as in map creation
-                        
+              
                       
                         String alarmKey = normalizedNodeId + "_" + i;
                         String redisKey = "alarmState:" + alarmKey;
                         
                    
-                        
-                     
-                        log.debug("Looking for alarm key: {} (from nodeId: {}, bitIndex: {})", alarmKey, nodeId, i);
-                        
-                      
+
+                      //  redisTemplate.delete(cacheAlarmServiceInstance.ACTIVE_ALARMS_KEY);
+                       
 
                         EquipmentAlarmDetails alarmDetail = alarmDetailsMap.get(alarmKey);
-                        
-                        
-                       
+                        System.out.println("alarmKey"+alarmKey);
+                        System.out.println("alarmDetail"+alarmDetail);
+                  
                         if (alarmDetail == null) {
+                        	
+                        	System.out.println("No Data");
                             log.trace("No alarm detail found for key: {}", alarmKey);
                             continue;
                         }
                         
                         MasterEquipmentDetailsEntity equipment = equipmentMap.get(alarmDetail.getEquipmentId());
+                        
+                      
                         if (equipment == null) {
+                        	
+                        
                             log.warn("No equipment found for ID: {} (alarm: {})", 
                                 alarmDetail.getEquipmentId(), alarmDetail.getEquipmentAlarmName());
                             continue;
                         }
+                        
+                       
                         String cachedState = redisTemplate.opsForValue().get(redisKey);
+                        
+                      
+                        
+                     
                         boolean wasPreviouslyActive = cachedState != null && Boolean.parseBoolean(cachedState);
-                      //= status != null && Boolean.parseBoolean(status);
+                   
                         
                         String now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
                         
-                        if ((b & 0xFF) != 0) {
-                            System.out.println("ALARM ON - Bit index: " + i + ", AlarmKey: " + alarmKey);
-                        }
-             
+                       
                         if ((b & 0xFF) != 0) { // Alarm is currently ACTIVE
                             System.out.println("#0.8");
+                            
+                            System.out.println("!wasPreviouslyActive"+wasPreviouslyActive);
                             if (!wasPreviouslyActive) {
                                 EquipmentAlarmHistoryEntity newAlarm = new EquipmentAlarmHistoryEntity();
                                 newAlarm.setEquipmentAlarmName(alarmDetail.getEquipmentAlarmName());
@@ -297,7 +333,9 @@ public class EquipmentAlarmController {
                                 // Update cache to mark as active
                                 redisTemplate.opsForValue().set(redisKey, "true");
                              
-                                alarmsToInsert.add(newAlarm);
+                             alarmsToInsert.add(newAlarm);
+                                
+                         ;
                                 
                                 log.info("New alarm activated - Equipment: {}, Alarm: {}, Time: {}", 
                                     equipment.getEquipmentName(), alarmDetail.getEquipmentAlarmName(), now);
@@ -371,27 +409,26 @@ public class EquipmentAlarmController {
                 }
 
                 if (!alarmsToUpdate.isEmpty()) {
-                    System.out.println("#0.12");
                     equipmentHistoryrepo.saveAll(alarmsToUpdate);
+
                     List<EquipmentAlarmHistoryDto> cachedDtos =
                             (List<EquipmentAlarmHistoryDto>) cacheAlarmServiceInstance.redisTemplate.opsForValue()
                                 .get(cacheAlarmServiceInstance.ACTIVE_ALARMS_KEY);
 
-                        if (cachedDtos != null) {
-                            Set<Integer> resolvedAlarmIds = alarmsToUpdate.stream()
-                                .map(EquipmentAlarmHistoryEntity::getEquipmentAlarmId)
-                                .collect(Collectors.toSet());
+                    if (cachedDtos != null) {
+                        Set<Integer> resolvedAlarmIds = alarmsToUpdate.stream()
+                            .map(EquipmentAlarmHistoryEntity::getEquipmentAlarmId)
+                            .collect(Collectors.toSet());
 
-                            cachedDtos.removeIf(dto -> resolvedAlarmIds.contains(dto.getEquipmentAlarmId()));
+                        cachedDtos.removeIf(dto -> resolvedAlarmIds.contains(dto.getEquipmentAlarmId()));
 
-                            cacheAlarmServiceInstance.redisTemplate.opsForValue().set(
-                                cacheAlarmServiceInstance.RESOLVED_ALARMS_KEY,
-                                cachedDtos
-                                
-                            );
-                        }
+                        // ✅ FIX: update ACTIVE_ALARMS_KEY, not RESOLVED_ALARMS_KEY
+                        cacheAlarmServiceInstance.redisTemplate.opsForValue().set(
+                            cacheAlarmServiceInstance.ACTIVE_ALARMS_KEY,
+                            cachedDtos
+                        );
+                    }
                 }
-
                 log.info("Alarm processing completed successfully - New alarms: {}, Resolved alarms: {}", 
                     alarmsToInsert.size(), alarmsToUpdate.size());
 
@@ -446,24 +483,7 @@ public class EquipmentAlarmController {
 //        }
 //        return tag;
 //    }
-    private void updateActiveAlarmCache(List<EquipmentAlarmHistoryEntity> alarmsToUpdate, boolean isActive) {
-        try {
-        	for (EquipmentAlarmHistoryEntity alarm : alarmsToUpdate) {
-        		
-        		
-        		
-        	    String redisKey = "alarmState:" + alarm.getEquipmentAlarmId();
-        	    if(!alarm.getEquipmentAlarmStatus())
-        		{
-        			  cacheAlarmServiceInstance.redisTemplate.delete(redisKey);
-        		}
-        	    
-        	}
-            
-        } catch (Exception e) {
-            log.error("Failed to update Redis cache for alarmKey: {}, Error: {}", alarmsToUpdate, e.getMessage(), e);
-        }
-    }
+   
 
 }
     

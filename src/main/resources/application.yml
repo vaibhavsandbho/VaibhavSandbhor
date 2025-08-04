@@ -10,7 +10,7 @@ spring:
     hibernate:
       ddl-auto: update # Options: validate / create / create-drop
     show-sql: true
-    
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
     services:
   app:
     build: .

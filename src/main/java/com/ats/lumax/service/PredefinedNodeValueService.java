@@ -19,33 +19,7 @@ import jakarta.annotation.PostConstruct;
 public class PredefinedNodeValueService {
 
     private final Map<String, Object> nodeValues = new HashMap<>();
-    @PostConstruct
-    public void init() {
-        ObjectMapper mapper = new ObjectMapper();
-        try (InputStream is = getClass().getClassLoader().getResourceAsStream("BrowseTag.json")) {
-            if (is == null) {
-                System.err.println("❌ BrowseTag not found in classpath");
-                throw new FileNotFoundException("BrowseTag not found in classpath");
-            }
 
-            // Step 1: Read as List
-            List<String> tagList = mapper.readValue(is, new TypeReference<List<String>>() {});
-            System.out.println("✅ Loaded tag list: " + tagList.size());
-
-            // Step 2: Convert to Map<String, Object>
-            for (String tag : tagList) {
-                nodeValues.put(tag, null); // Or use a default value like false/0/etc.
-            }
-
-        } catch (IOException e) {
-            System.err.println("❌ Failed to load BrowseTag: " + e.getMessage());
-            throw new RuntimeException("Failed to load BrowseTag", e);
-        }
-    }
-
-    public Object getValue(String nodeId) {
-        return nodeValues.get(nodeId);
-    }
 
     public Map<String, Object> getAllValues() {
         return Collections.unmodifiableMap(nodeValues);
@@ -56,7 +30,7 @@ public class PredefinedNodeValueService {
         Map<String, List<String>> allTags = new HashMap<>();
 
         // Define all tag file keys (can be extended)
-        List<String> keys = List.of("BrowseTag");
+        List<String> keys = List.of("Zone1AlarmsTag","Zone2AlarmsTag","Zone3AlarmsTag");
 
         for (String key : keys) {
             String fileName = key + ".json";

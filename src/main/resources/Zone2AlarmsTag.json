@@ -1,0 +1,11 @@
+
+[
+"ns=3;s=\"3.PLC_TO_WMS_ST1_ALM\".\"Alarm-01\"",
+ "ns=3;s=\"3.PLC_TO_WMS_ST1_ALM\".\"Alarm-02\"",
+ "ns=3;s=\"3.PLC_TO_WMS_ST1_ALM\".\"Alarm-03\"",
+ "ns=3;s=\"3.PLC_TO_WMS_ST1_ALM\".\"Alarm-04\"",
+ "ns=3;s=\"3.PLC_TO_WMS_ST1_ALM\".\"Alarm-05\"",
+ "ns=3;s=\"3.PLC_TO_WMS_ST1_ALM\".\"Alarm-06\"",
+ "ns=3;s=\"3.PLC_TO_WMS_ST1_ALM\".\"Alarm-07\"",
+ "ns=3;s=\"3.PLC_TO_WMS_ST1_ALM\".\"Alarm-08\""
+]
