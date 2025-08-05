@@ -12,40 +12,37 @@ import com.ats.lumax.repo.activateAlaramviewRepo;
 import com.ats.lumax.repo.resolvedAlarmviewrepo;
 @Service
 public class EquipmentAlarmviewService {
-	
-	
-	@Autowired
-	
-	private activateAlaramviewRepo activateAlaramviewRepoInstance;
-	
-	@Autowired
-	private resolvedAlarmviewrepo resolvedAlarmviewrepoInstance;
-	
-	@Autowired
-	private RedisTemplate<String, List<ActiveequipmentalarmsviewEntity>> redisTemplate;
-	@Autowired
-	private RedisTemplate<String,  List<Resolvedequipmentalarms>> redisTemplate1;
 
+    @Autowired
+    private activateAlaramviewRepo activateAlaramviewRepoInstance;
 
-	private static final String REDIS_ACTIVE_ALARMS_KEY = "ACTIVE_ALARMS_CACHE";
-	private static final String REDIS_RESOLVED_ALARMS_KEY = "RESOLVED_ALARMS_CACHE";
+    @Autowired
+    private resolvedAlarmviewrepo resolvedAlarmviewrepoInstance;
 
-	public void updateAlarmCaches() {
-	    // Fetch from DB
-	    List<ActiveequipmentalarmsviewEntity> activeList = activateAlaramviewRepoInstance.findAll();
-	    List<Resolvedequipmentalarms> resolvedList = resolvedAlarmviewrepoInstance.findAll();
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
 
-	    // Push to Redis
-	    redisTemplate.opsForValue().set(REDIS_ACTIVE_ALARMS_KEY, activeList);
-	    redisTemplate1.opsForValue().set(REDIS_RESOLVED_ALARMS_KEY, resolvedList);
-	}
-	
-	public List<ActiveequipmentalarmsviewEntity> getActiveAlarmsFromCache() {
-	    return redisTemplate.opsForValue().get(REDIS_ACTIVE_ALARMS_KEY);
-	}
+    private static final String REDIS_ACTIVE_ALARMS_KEY = "ACTIVE_ALARMS_CACHE";
+    private static final String REDIS_RESOLVED_ALARMS_KEY = "RESOLVED_ALARMS_CACHE";
 
-	public List<Resolvedequipmentalarms> getResolvedAlarmsFromCache() {
-	    return redisTemplate1.opsForValue().get(REDIS_RESOLVED_ALARMS_KEY);
-	}
+    public void updateAlarmCaches() {
+        // Fetch from DB
+        List<ActiveequipmentalarmsviewEntity> activeList = activateAlaramviewRepoInstance.findAll();
+        List<Resolvedequipmentalarms> resolvedList = resolvedAlarmviewrepoInstance.findAll();
 
+        // Store in Redis
+        redisTemplate.opsForValue().set(REDIS_ACTIVE_ALARMS_KEY, activeList);
+        redisTemplate.opsForValue().set(REDIS_RESOLVED_ALARMS_KEY, resolvedList);
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<ActiveequipmentalarmsviewEntity> getActiveAlarmsFromCache() {
+        return (List<ActiveequipmentalarmsviewEntity>) redisTemplate.opsForValue().get(REDIS_ACTIVE_ALARMS_KEY);
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<Resolvedequipmentalarms> getResolvedAlarmsFromCache() {
+        return (List<Resolvedequipmentalarms>) redisTemplate.opsForValue().get(REDIS_RESOLVED_ALARMS_KEY);
+    }
 }
+
