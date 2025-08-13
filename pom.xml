@@ -8,12 +8,13 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>3.4.1</version>
-        <relativePath/>
+     
     </parent>
 
     <groupId>com.ats</groupId>
     <artifactId>EquipmentAlarm</artifactId>
     <version>0.0.1-SNAPSHOT</version>
+     <packaging>war</packaging>
     <name>plc-integration</name>
     <description> Read and Write Alarm using Spring Boot and OPC UA</description>
     <url>https://your-repository-url.com</url>

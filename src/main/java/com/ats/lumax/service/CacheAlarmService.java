@@ -35,7 +35,7 @@ public class CacheAlarmService {
 	 public static final String ACTIVE_ALARMS_KEY = "active_alarms_cache";
 	    public static final String RESOLVED_ALARMS_KEY = "resolved_alarms_cache";
 	    public void updatedActiveAlarmCache(List<EquipmentAlarmHistoryDto> e) {
-	        redisTemplate.opsForValue().set(ACTIVE_ALARMS_KEY, e, Duration.ofMinutes(1));
+	        redisTemplate.opsForValue().set(ACTIVE_ALARMS_KEY, e);
 	        System.out.println("Updated active alarm cache with " + e.size() + " records.");
 	    }
 

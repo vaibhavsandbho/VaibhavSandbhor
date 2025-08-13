@@ -30,7 +30,7 @@ public class PredefinedNodeValueService {
         Map<String, List<String>> allTags = new HashMap<>();
 
         // Define all tag file keys (can be extended)
-        List<String> keys = List.of("Zone1AlarmsTag","Zone2AlarmsTag","Zone3AlarmsTag");
+        List<String> keys = List.of("Zone2AlarmsTag","Zone1AlarmsTag","Zone3AlarmsTag");
 
         for (String key : keys) {
             String fileName = key + ".json";
@@ -40,6 +40,13 @@ public class PredefinedNodeValueService {
                     System.err.println("⚠️ File not found: " + fileName);
                     allTags.put(key, List.of());
                     continue;
+                    
+                    
+                    
+                    
+                    
+                    
+                    
                 }
 
                 List<String> tagList = mapper.readValue(is, new TypeReference<List<String>>() {});

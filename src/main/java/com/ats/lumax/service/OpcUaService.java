@@ -419,7 +419,7 @@ public class OpcUaService {
 
             ObjectMapper mapper = new ObjectMapper();
 
-            String filePath = System.getProperty("user.dir") + "/EquipmentAlarmDetails.json";
+            String filePath = System.getProperty("user.dir") + "/src/main/resources/EquipmentAlarmDetails.json";
             File file = new File(filePath);
 
             mapper.writeValue(file, list);
