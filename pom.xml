@@ -14,7 +14,7 @@
     <groupId>com.ats</groupId>
     <artifactId>EquipmentAlarm</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-     <packaging>war</packaging>
+     <packaging>jar</packaging>
     <name>plc-integration</name>
     <description> Read and Write Alarm using Spring Boot and OPC UA</description>
     <url>https://your-repository-url.com</url>
@@ -195,7 +195,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>com.ats.plc.Application</mainClass>
+                   <mainClass>com.ats.lumax.EquipmentAlarmServiceApplication</mainClass>
                     <excludes>
                         <exclude>
                             <groupId>org.projectlombok</groupId>

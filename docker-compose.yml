@@ -1,0 +1,44 @@
+services:
+  backend:
+    build:
+      context: C:\Users\vaibhavs\OneDrive - ATS Group\Documents\GitHub\VaibhavSandbhor
+      dockerfile: Dockerfile
+    container_name: MahindraBattery-Backend
+    ports:
+      - "8090:8090"
+    depends_on:
+      - redis
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://host.docker.internal:5432/ats_mahindra_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: root
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+    networks:
+      - app-network
+
+  frontend:
+    build:
+      context: C:\Users\vaibhavs\OneDrive - ATS Group\Documents\GitHub\AlarmDashBoardReactApp
+    container_name: MahindraBattery-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: http://backend:8090
+    depends_on:
+      - backend
+    networks:
+      - app-network
+
+  redis:
+    image: redis:7
+    container_name: redis-cache
+    restart: always
+    ports:
+      - "6379:6379"
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
