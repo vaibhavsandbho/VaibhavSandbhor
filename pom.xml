@@ -13,8 +13,8 @@
 
     <groupId>com.ats</groupId>
     <artifactId>EquipmentAlarm</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
-     <packaging>jar</packaging>
+    
+     <packaging>war</packaging>
     <name>plc-integration</name>
     <description> Read and Write Alarm using Spring Boot and OPC UA</description>
     <url>https://your-repository-url.com</url>

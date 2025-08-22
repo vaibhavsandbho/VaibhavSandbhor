@@ -2,7 +2,7 @@ spring:
   application:
     name: plc-integration
   datasource:
-    url: jdbc:postgresql://localhost:5432/ats_mahindra_db
+    url: jdbc:postgresql://10.192.65.165::5432/ats_mahindra_db
     username: postgres
     password: root
     driver-class-name: org.postgresql.Driver
@@ -25,7 +25,7 @@ spring:
      timeout: 60000   # Optional: timeout in ms
  
 server:
-  port: 8080
+  port: 8090
   servlet:
     connection-timeout: 60s
 
