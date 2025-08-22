@@ -18,7 +18,7 @@ import com.ats.EquipmentAlarm.repo.EquipmetAlarmDetailsRepo;
 import com.ats.EquipmentAlarm.service.MasterEuipmentAlarmService;
 
 @RestController
-@RequestMapping("/dashborad")
+@RequestMapping("/dashboard")
 @CrossOrigin("*")
 public class DashBoardController {
 	
