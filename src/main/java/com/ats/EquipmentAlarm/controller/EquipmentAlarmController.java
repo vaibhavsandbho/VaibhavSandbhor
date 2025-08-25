@@ -131,7 +131,7 @@ public class EquipmentAlarmController {
         Map<String, List<String>> allTags = predefinedNodeValueService.loadAllTagFiles();
         Set<String> allNodeIds = extractNodeIds(allTags);
         
-        System.out.println("#0.1");
+        
 
         List<EquipmentAlarmDetails> alarmDetailsList = loadAlarmDetailsFromJson();
         List<MasterEquipmentDetailsEntity> equipmentDetailsList = loadEquipmentDetailsFromJson();
@@ -214,8 +214,7 @@ public class EquipmentAlarmController {
         if (alarmWordObj instanceof Boolean) {
             processBooleanAlarm(normalizedNodeId, (Boolean) alarmWordObj, alarmDetailsMap, equipmentMap, alarmsToInsert, alarmsToUpdate);
         } else if (alarmWordObj instanceof ExtensionObject) {
-        	
-        	System.out.println("#1.2");
+       
             processWordAlarm(normalizedNodeId, (ExtensionObject) alarmWordObj, alarmDetailsMap, equipmentMap, alarmsToInsert, alarmsToUpdate);
         } else {
             log.trace("Unsupported data type for node: {}", nodeId);
@@ -234,8 +233,7 @@ public class EquipmentAlarmController {
         String redisKey = getRedisKey(alarmKey);
 
         EquipmentAlarmDetails alarmDetail = alarmDetailsMap.get(alarmKey);
-        System.out.println("alarmKey"+alarmKey);
-        System.out.println("alarmDetail"+alarmDetail);
+    
      
         
      
@@ -252,15 +250,15 @@ public class EquipmentAlarmController {
                                   Map<Integer, MasterEquipmentDetailsEntity> equipmentMap,
                                   Queue<EquipmentAlarmHistoryEntity> alarmsToInsert,
                                   Queue<EquipmentAlarmHistoryEntity> alarmsToUpdate) {
-System.out.println("2.1");
+
         Object body = extObj.getBody();
         
-        System.out.println("body"+body);
+        
         if (!(body instanceof ByteString)) return;
 
         byte[] bytes = ((ByteString) body).bytes();
         
-        System.out.println("bytes"+bytes);
+       
 
         for (int i = 0; i < bytes.length; i++) {
             boolean active = (bytes[i] & 0xFF) != 0;
@@ -268,8 +266,7 @@ System.out.println("2.1");
             String redisKey = getRedisKey(alarmKey);
            
             EquipmentAlarmDetails alarmDetail = alarmDetailsMap.get(alarmKey);
-            System.out.println("alarmKey"+alarmKey);
-            System.out.println("alarmDetail"+alarmDetail);
+            
         
             if (alarmDetail == null) continue;
 

@@ -27,16 +27,30 @@ public class DashBoardController {
 	private MasterEuipmentAlarmService masterAlarmServiceInstance;
 	
 
-//
 	@GetMapping("/fetchEquipmentAlarmByAllFilters/{equipmentAlarmStatus}/{alarmOccurredDatetime}/{alarmOccurredDatetime1}")
-public List<EquipmentAlarmHistoryEntity> fetchEquipmentAlaramByAllFilters(
-		@PathVariable String equipmentAlarmStatus,
-		@PathVariable String alarmOccurredDatetime, @PathVariable String alarmOccurredDatetime1) {
+	public List<EquipmentAlarmHistoryEntity> fetchEquipmentAlaramByAllFilters(
+	    @PathVariable String equipmentAlarmStatus,
+	    @PathVariable String alarmOccurredDatetime, 
+	    @PathVariable String alarmOccurredDatetime1) {
 
-	System.out.println("In Filter method");
-	return masterAlarmServiceInstance.findbyFilter(alarmOccurredDatetime, alarmOccurredDatetime1,equipmentAlarmStatus);
+		
+		System.out.println("#557668");
+	    System.out.println("In Filter method"+equipmentAlarmStatus);
 
-}
+	    // Handle empty or null values
+//	    if ("NA".equals(alarmOccurredDatetime)) {
+//	        alarmOccurredDatetime = null;
+//	    }
+//	    if ("NA".equals(alarmOccurredDatetime1)) {
+//	        alarmOccurredDatetime1 = null;
+//	    }
+////	    if ("NA".equals(equipmentAlarmStatus)) {
+//	        equipmentAlarmStatus = null;
+//	    }
+
+	    return masterAlarmServiceInstance.findbyFilter(alarmOccurredDatetime, alarmOccurredDatetime1, equipmentAlarmStatus);
+	}
+
 	
 	@GetMapping("/fetchActivateAlarm")
 	public List<EquipmentAlarmHistoryEntity> fetchbyEquipmentAlarmStatus(  @RequestParam(defaultValue = "0") int offset,
