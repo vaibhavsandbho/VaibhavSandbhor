@@ -236,8 +236,7 @@ public class EquipmentAlarmController {
         String redisKey = getRedisKey(alarmKey);
 
         EquipmentAlarmDetails alarmDetail = alarmDetailsMap.get(alarmKey);
-        System.out.println("alarmKey"+alarmKey);
-        System.out.println("alarmDetail"+alarmDetail);
+      
      
         
      
@@ -254,10 +253,10 @@ public class EquipmentAlarmController {
                                   Map<Integer, MasterEquipmentDetailsEntity> equipmentMap,
                                   Queue<EquipmentAlarmHistoryEntity> alarmsToInsert,
                                   Queue<EquipmentAlarmHistoryEntity> alarmsToUpdate) {
-System.out.println("2.1");
+
         Object body = extObj.getBody();
         
-        System.out.println("body"+body);
+       
         if (!(body instanceof ByteString)) return;
 
         byte[] bytes = ((ByteString) body).bytes();
@@ -270,8 +269,7 @@ System.out.println("2.1");
             String redisKey = getRedisKey(alarmKey);
            
             EquipmentAlarmDetails alarmDetail = alarmDetailsMap.get(alarmKey);
-            System.out.println("alarmKey"+alarmKey);
-            System.out.println("alarmDetail"+alarmDetail);
+     
         
             if (alarmDetail == null) continue;
 
@@ -291,7 +289,7 @@ System.out.println("2.1");
 
         boolean wasActive = Boolean.parseBoolean(redisTemplate.opsForValue().get(redisKey));
         String now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-System.out.println("3.1");
+
         if (isActive && !wasActive) {
             EquipmentAlarmHistoryEntity newAlarm = createHistoryEntity(detail, equipment, now);
             redisTemplate.opsForValue().set(redisKey, "true");
@@ -310,7 +308,7 @@ System.out.println("3.1");
 
     private EquipmentAlarmHistoryEntity createHistoryEntity(EquipmentAlarmDetails detail, MasterEquipmentDetailsEntity equipment, String now) {
     	
-    	System.out.println("4.1");
+  
         EquipmentAlarmHistoryEntity entity = new EquipmentAlarmHistoryEntity();
         entity.setEquipmentAlarmName(detail.getEquipmentAlarmName());
         entity.setEquipmentAlarmDesc(detail.getEquipmentAlarmDesc());
