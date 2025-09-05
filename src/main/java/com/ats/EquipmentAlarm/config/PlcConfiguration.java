@@ -15,12 +15,13 @@ public class PlcConfiguration {
     public static class OpcUa {
         private boolean enabled = true;
         private String serverUrl;
-        private String securityPolicy = "None";
+        private String securityPolicy;
         private String username;
         private String password;
-        private int connectionTimeout = 5000;
+        private String securityMode;
+        private int connectionTimeout = 400;
         private int maxReconnectAttempts = 3;
-        private long reconnectDelay = 5000;
+        private long reconnectDelay = 400;
         private List<Tag> tags;
         private List<Telegram> telegrams;
     }

@@ -1,6 +1,20 @@
 [
-  "ns=3;s=\"Alarm_DB\".\"Communication_Fault\"",
-  "ns=3;s=\"Alarm_DB\".\"EMG Comm Fault\"",
-  "ns=3;s=\"Alarm_DB\".\"BCR Comm Fault\"",
-  "ns=3;s=\"Alarm_DB\".\"Load Cell Comm Fault\""
+  "ns=3;s=\"10.Conv_ALARMS\".\"CH01_Alarm\"",
+  "ns=3;s=\"10.Conv_ALARMS\".\"CH02_Alarm\"",
+  "ns=3;s=\"10.Conv_ALARMS\".\"CH03_Alarm\"",
+  "ns=3;s=\"10.Conv_ALARMS\".\"CH04_Alarm\"",
+  "ns=3;s=\"10.Conv_ALARMS\".\"CT01_RC_Alarm\"",
+  "ns=3;s=\"10.Conv_ALARMS\".\"CT02_RC_Alarm\"",
+  "ns=3;s=\"10.Conv_ALARMS\".\"RC01_Alarm\"",
+  "ns=3;s=\"10.Conv_ALARMS\".\"CH05_Alarm\"",
+  "ns=3;s=\"10.Conv_ALARMS\".\"CH06_Alarm\"",
+  "ns=3;s=\"10.Conv_ALARMS\".\"CH10_Alarm\"",
+  "ns=3;s=\"10.Conv_ALARMS\".\"POPUP01_Alarm\"",
+  "ns=3;s=\"10.Conv_ALARMS\".\"POPUP02_Alarm\"",
+  "ns=3;s=\"10.Conv_ALARMS\".\"POPUP03_Alarm\"",
+  "ns=3;s=\"10.Conv_ALARMS\".\"POPUP04_Alarm\"",
+  "ns=3;s=\"10.Conv_ALARMS\".\"POPUP05_Alarm\"",
+  "ns=3;s=\"10.Conv_ALARMS\".\"SYS_Alarm\"",
+  "ns=3;s=\"10.Conv_ALARMS\".\"Alarm1\"",
+  "ns=3;s=\"10.Conv_ALARMS\".\"Alarm2\""
 ]

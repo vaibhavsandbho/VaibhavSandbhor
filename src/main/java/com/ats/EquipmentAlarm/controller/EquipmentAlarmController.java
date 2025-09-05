@@ -1,6 +1,7 @@
 package com.ats.EquipmentAlarm.controller;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Duration;
@@ -13,6 +14,8 @@ import java.util.*;
 import java.util.function.Function;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.ResponseEntity;
@@ -53,17 +56,17 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class EquipmentAlarmController {
 
-
+	
     private final OpcUaValueConverter opcUaValueConverter;
 
 	
 	private final PredefinedNodeValueService predefinedNodeValueService;
-
+	
     private final OpcUaService opcUaService;
-    
+	
     private final EquipmentAlaramHistoryrepo equipmentHistoryrepo;
     
-    @Autowired
+ 
     private EquipmetAlarmDetailsRepo equipmentAlarmDetailsRepo;
              
     @Autowired
@@ -76,6 +79,8 @@ public class EquipmentAlarmController {
     
     @Autowired
     private ModelMapper modelMapper;
+    @Autowired
+    private ResourceLoader resourceLoader;
     
     private final Map<String, Boolean> alarmStates = new ConcurrentHashMap<>();
 //
@@ -152,7 +157,7 @@ public class EquipmentAlarmController {
         log.info("Processing {} OPC UA nodes for alarm state changes", allNodeIds.size());
         allNodeIds.parallelStream().forEach(nodeId -> {
             try {
-            	System.out.println("#0.2");
+            	log.debug("Processing OPC UA node: {}", nodeId);
                 processNode(nodeId, alarmDetailsMap, equipmentMap, alarmsToInsert, alarmsToUpdate);
             } catch (Exception e) {
                 log.error("Error processing node {}: {}", nodeId, e.getMessage(), e);
@@ -199,14 +204,14 @@ public class EquipmentAlarmController {
                              Queue<EquipmentAlarmHistoryEntity> alarmsToUpdate) {
     	
     	
-    	System.out.println("0.333");
+    	log.trace("Starting node processing for: {}", nodeId);
 
         Optional<DataValue> alarmWordOpt = opcUaService.readValue(nodeId);
         if (!alarmWordOpt.isPresent()) {
             log.trace("No value for node: {}", nodeId);
             return;
         }
-        System.out.println("1.1");
+        log.trace("Successfully read value for node: {}", nodeId);
 
         Object alarmWordObj = alarmWordOpt.get().getValue().getValue();
         String normalizedNodeId = nodeId.replace("\"", "");
@@ -216,7 +221,11 @@ public class EquipmentAlarmController {
         } else if (alarmWordObj instanceof ExtensionObject) {
        
             processWordAlarm(normalizedNodeId, (ExtensionObject) alarmWordObj, alarmDetailsMap, equipmentMap, alarmsToInsert, alarmsToUpdate);
-        } else {
+        }
+        else if (alarmWordObj instanceof Boolean[]) {
+           
+            processWordAlarmBooleanArray(normalizedNodeId, (Boolean[]) alarmWordObj, alarmDetailsMap, equipmentMap, alarmsToInsert, alarmsToUpdate);
+        }else {
             log.trace("Unsupported data type for node: {}", nodeId);
         }
     }
@@ -227,17 +236,17 @@ public class EquipmentAlarmController {
                                      Queue<EquipmentAlarmHistoryEntity> alarmsToInsert,
                                      Queue<EquipmentAlarmHistoryEntity> alarmsToUpdate) {
     	
-    	System.out.println("#5.1");
+    	log.debug("Processing boolean alarm for node: {}", normalizedNodeId);
 
         String alarmKey = normalizedNodeId + "_0";
         String redisKey = getRedisKey(alarmKey);
 
         EquipmentAlarmDetails alarmDetail = alarmDetailsMap.get(alarmKey);
     
-     
+      
         
      
-        if (alarmDetail == null) return;
+        if (alarmDetail == null) {   log.trace("No alarm detail found for key: {}", alarmKey);return;}
 
         MasterEquipmentDetailsEntity equipment = equipmentMap.get(alarmDetail.getEquipmentId());
         if (equipment == null) return;
@@ -267,17 +276,51 @@ public class EquipmentAlarmController {
            
             EquipmentAlarmDetails alarmDetail = alarmDetailsMap.get(alarmKey);
             
+            
+            
         
-            if (alarmDetail == null) continue;
+            if (alarmDetail == null){    
+            log.trace("No alarm detail found for boolean array key: {}", alarmKey);
+            continue;
 
-
+            }
           
             MasterEquipmentDetailsEntity equipment = equipmentMap.get(alarmDetail.getEquipmentId());
-            if (equipment == null) continue;
+            if (equipment == null) {
+            	 log.trace("No  detail found for boolean array key: {}", alarmKey);
+            continue;
+            }
 
             handleAlarmChange(alarmDetail, equipment, active, redisKey, alarmsToInsert, alarmsToUpdate);
         }
     }
+    
+    
+    private void processWordAlarmBooleanArray(String normalizedNodeId, Boolean[] extObj,
+            Map<String, EquipmentAlarmDetails> alarmDetailsMap,
+            Map<Integer, MasterEquipmentDetailsEntity> equipmentMap,
+            Queue<EquipmentAlarmHistoryEntity> alarmsToInsert,
+            Queue<EquipmentAlarmHistoryEntity> alarmsToUpdate) {
+
+  for (int i = 0; i < extObj.length; i++) {
+  boolean active = extObj[i];
+  String alarmKey = normalizedNodeId + "_" + i;
+  String redisKey = getRedisKey(alarmKey);
+  
+
+  EquipmentAlarmDetails alarmDetail = alarmDetailsMap.get(alarmKey);
+ 
+
+if (alarmDetail == null) {  log.trace("No alarm detail found for boolean array key: {}", alarmKey); continue;}
+
+
+
+MasterEquipmentDetailsEntity equipment = equipmentMap.get(alarmDetail.getEquipmentId());
+if (equipment == null) continue;
+
+handleAlarmChange(alarmDetail, equipment, active, redisKey, alarmsToInsert, alarmsToUpdate);
+}
+}
 
     private void handleAlarmChange(EquipmentAlarmDetails detail, MasterEquipmentDetailsEntity equipment,
                                    boolean isActive, String redisKey,
@@ -286,26 +329,32 @@ public class EquipmentAlarmController {
 
         boolean wasActive = Boolean.parseBoolean(redisTemplate.opsForValue().get(redisKey));
         String now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-System.out.println("3.1");
+
         if (isActive && !wasActive) {
             EquipmentAlarmHistoryEntity newAlarm = createHistoryEntity(detail, equipment, now);
             redisTemplate.opsForValue().set(redisKey, "true");
             alarmsToInsert.add(newAlarm);
+            log.info("NEW ALARM TRIGGERED - Equipment: {}, Alarm: {}, Time: {}", 
+                    equipment.getEquipmentName(), detail.getEquipmentAlarmName(), now);
         } else if (!isActive && wasActive) {
             EquipmentAlarmHistoryEntity history =
                     equipmentHistoryrepo.findByEquipmentAlarmIdAndEquipmentAlarmStatusTrue(detail.getEquipmentAlarmId());
+            
             if (history != null) {
                 history.setAlarmResolvedDatetime(now);
                 history.setEquipmentAlarmStatus(false);
                 redisTemplate.opsForValue().set(redisKey, "false");
                 alarmsToUpdate.add(history);
+                log.info("ALARM RESOLVED - Equipment: {}, Alarm: {}, Time: {}", 
+                        equipment.getEquipmentName(), detail.getEquipmentAlarmName(), now);
             }
         }
     }
 
     private EquipmentAlarmHistoryEntity createHistoryEntity(EquipmentAlarmDetails detail, MasterEquipmentDetailsEntity equipment, String now) {
     	
-    	System.out.println("4.1");
+    	log.debug("Creating new alarm history entity for equipment: {} with alarm: {}", 
+    	          equipment.getEquipmentName(), detail.getEquipmentAlarmName());
         EquipmentAlarmHistoryEntity entity = new EquipmentAlarmHistoryEntity();
         entity.setEquipmentAlarmName(detail.getEquipmentAlarmName());
         entity.setEquipmentAlarmDesc(detail.getEquipmentAlarmDesc());
@@ -382,26 +431,47 @@ System.out.println("3.1");
         return normalizedTag;
     }
  // Loads alarm detail definitions from JSON file (used to map nodeId to alarm metadata)
-    private List<EquipmentAlarmDetails> loadAlarmDetailsFromJson() throws StreamReadException, DatabindException, IOException {
-    	  try (InputStream is = getClass().getClassLoader().getResourceAsStream("EquipmentAlarmDetails.json")) {
-    	        if (is == null) {
-    	            log.error("EquipmentAlarmDetails.json resource not found!");
-    	            return Collections.emptyList();
-    	        }
-    	        return new ObjectMapper().readValue(is, new TypeReference<List<EquipmentAlarmDetails>>() {});
-    }
+    private List<EquipmentAlarmDetails> loadAlarmDetailsFromJson() throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+
+        // First check external data folder
+        String externalPath = System.getProperty("user.dir") + "/data/EquipmentAlarmDetails.json";
+        File externalFile = new File(externalPath);
+
+        if (externalFile.exists()) {
+            try (InputStream is = new FileInputStream(externalFile)) {
+                return mapper.readValue(is, new TypeReference<List<EquipmentAlarmDetails>>() {});
+            }
+        }
+
+        // Fallback: load from classpath resource
+        Resource resource = resourceLoader.getResource("classpath:EquipmentAlarmDetails.json");
+        try (InputStream is = resource.getInputStream()) {
+            return mapper.readValue(is, new TypeReference<List<EquipmentAlarmDetails>>() {});
+        }
     }
 
-    // Loads master equipment definitions from JSON file (used to enrich alarm data)
-    private List<MasterEquipmentDetailsEntity> loadEquipmentDetailsFromJson() throws StreamReadException, DatabindException, IOException {
-    	try (InputStream is = getClass().getClassLoader().getResourceAsStream("EquipmentDeatails.json")) {
-	        if (is == null) {
-	            log.error("EquipmentAlarmDetails.json resource not found!");
-	            return Collections.emptyList();
-	        }
-	        return new ObjectMapper().readValue(is, new TypeReference<List<MasterEquipmentDetailsEntity>>() {});
-}
+    private List<MasterEquipmentDetailsEntity> loadEquipmentDetailsFromJson() throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+
+        // First check external data folder
+        String externalPath = System.getProperty("user.dir") + "/data/EquipmentDeatails.json";
+        File externalFile = new File(externalPath);
+
+        if (externalFile.exists()) {
+            try (InputStream is = new FileInputStream(externalFile)) {
+                return mapper.readValue(is, new TypeReference<List<MasterEquipmentDetailsEntity>>() {});
+            }
+        }
+
+        // Fallback: load from classpath resource
+        Resource resource = resourceLoader.getResource("classpath:EquipmentDeatails.json");
+        try (InputStream is = resource.getInputStream()) {
+            return mapper.readValue(is, new TypeReference<List<MasterEquipmentDetailsEntity>>() {});
+        }
     }
+
+}
 //    private String extractTagBase(String tag) {
 //        if (tag == null || tag.isEmpty()) return tag;
 //
@@ -417,5 +487,5 @@ System.out.println("3.1");
 //    }
    
 
-}
+
     

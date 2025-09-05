@@ -1,9 +1,9 @@
-package com.ats.lumax;
+package com.ats.EquipmentAlarm;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
+@SpringBootTest()
 class HeartBeatApplicationTests {
 
 	@Test

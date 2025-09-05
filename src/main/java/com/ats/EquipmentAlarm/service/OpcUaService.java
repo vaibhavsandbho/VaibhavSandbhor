@@ -1,15 +1,22 @@
 package com.ats.EquipmentAlarm.service;
 
 import lombok.extern.slf4j.Slf4j;
+
+import org.apache.juli.logging.Log;
 import org.eclipse.milo.opcua.sdk.client.OpcUaClient;
+import org.eclipse.milo.opcua.sdk.client.api.config.OpcUaClientConfig;
 import org.eclipse.milo.opcua.sdk.client.api.identity.AnonymousProvider;
 import org.eclipse.milo.opcua.sdk.client.api.identity.IdentityProvider;
 import org.eclipse.milo.opcua.sdk.client.api.identity.UsernameProvider;
+import org.eclipse.milo.opcua.stack.client.security.DefaultClientCertificateValidator;
 import org.eclipse.milo.opcua.stack.core.AttributeId;
 import org.eclipse.milo.opcua.stack.core.Identifiers;
+import org.eclipse.milo.opcua.stack.core.security.DefaultCertificateManager;
 import org.eclipse.milo.opcua.stack.core.security.SecurityPolicy;
+import org.eclipse.milo.opcua.stack.core.security.TrustListManager;
 import org.eclipse.milo.opcua.stack.core.types.builtin.*;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UInteger;
+import org.eclipse.milo.opcua.stack.core.types.enumerated.MessageSecurityMode;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.MonitoringMode;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.TimestampsToReturn;
 import org.eclipse.milo.opcua.stack.core.types.structured.*;
@@ -19,16 +26,24 @@ import org.springframework.stereotype.Service;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 
+
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import com.ats.EquipmentAlarm.Entity.EquipmentAlarmDetails;
+import com.ats.EquipmentAlarm.Entity.EquipmentAlarmHistoryEntity;
 import com.ats.EquipmentAlarm.Entity.MasterEquipmentDetailsEntity;
+import com.ats.EquipmentAlarm.config.KeyStoreLoader;
 import com.ats.EquipmentAlarm.config.PlcConfiguration;
+import com.ats.EquipmentAlarm.repo.EquipmentAlaramHistoryrepo;
 import com.ats.EquipmentAlarm.repo.EquipmetAlarmDetailsRepo;
 import com.ats.EquipmentAlarm.repo.MasterEquipmentRepo;
 import com.fasterxml.jackson.core.exc.StreamWriteException;
@@ -44,6 +59,8 @@ import com.google.common.collect.ImmutableList;
 public class OpcUaService {
     private final PlcConfiguration plcConfig;
     
+    
+    private EquipmentAlaramHistoryrepo equpmentalarmHistoryrepo;
   
     private OpcUaClient client;
     @Autowired
@@ -78,17 +95,35 @@ public class OpcUaService {
         }
     }
 
+
     private void connect() throws Exception {
+        System.out.println("Starting OPC UA connection...");
+
         SecurityPolicy securityPolicy = SecurityPolicy.valueOf(plcConfig.getOpcUa().getSecurityPolicy());
-        
+        MessageSecurityMode securityMode = MessageSecurityMode.valueOf(plcConfig.getOpcUa().getSecurityMode());
+
+        System.out.println("SecurityPolicy: " + securityPolicy + ", SecurityMode: " + securityMode);
+
+        Path securityDir = Paths.get("security");
+        Files.createDirectories(securityDir);
+
+        // Load or create the client certificate
+        KeyStoreLoader loader = new KeyStoreLoader().load(securityDir);
+        System.out.println("Client certificate loaded. ApplicationUri: " + loader.getApplicationUri());
+
+        // Build OPC UA client
         client = OpcUaClient.create(
             plcConfig.getOpcUa().getServerUrl(),
             endpoints -> endpoints.stream()
                 .filter(e -> e.getSecurityPolicyUri().equals(securityPolicy.getUri()))
+                .filter(e -> e.getSecurityMode().equals(securityMode))
                 .findFirst(),
             configBuilder -> configBuilder
                 .setApplicationName(LocalizedText.english("PLC Integration Client"))
-                .setApplicationUri("urn:plc:client")
+                .setApplicationUri(loader.getApplicationUri())  // MUST match certificate
+                .setKeyPair(loader.getClientKeyPair())
+                .setCertificate(loader.getClientCertificate())
+                .setCertificateChain(loader.getClientCertificateChain())
                 .setRequestTimeout(UInteger.valueOf(plcConfig.getOpcUa().getConnectionTimeout()))
                 .setIdentityProvider(createIdentityProvider())
                 .build()
@@ -104,27 +139,28 @@ public class OpcUaService {
             : new AnonymousProvider();
     }
 
-    private void connectWithRetry() {
+
+//    private IdentityProvider createIdentityProvider() {
+//        String username = plcConfig.getOpcUa().getUsername();
+//        return (username != null && !username.isEmpty()) 
+//            ? new UsernameProvider(username, plcConfig.getOpcUa().getPassword())
+//            : new AnonymousProvider();
+//    }
+
+    private void connectWithRetry() throws Exception {
         int attempts = 0;
         while (attempts < plcConfig.getOpcUa().getMaxReconnectAttempts()) {
             try {
                 client.connect().get();
-                log.info("Connected to OPC UA server at {}", plcConfig.getOpcUa().getServerUrl());
+                System.out.println("✅ Connected to PLC: " + plcConfig.getOpcUa().getServerUrl());
                 return;
-            } catch (Exception e) {
+            } catch (Exception ex) {
                 attempts++;
-                log.error("Connection attempt {} failed", attempts, e);
-                if (attempts < plcConfig.getOpcUa().getMaxReconnectAttempts()) {
-                    try {
-                        Thread.sleep(plcConfig.getOpcUa().getReconnectDelay());
-                    } catch (InterruptedException ie) {
-                        Thread.currentThread().interrupt();
-                        break;
-                    }
-                }
+                System.err.println("❌ Connection failed (attempt " + attempts + "): " + ex.getMessage());
+                if (attempts >= plcConfig.getOpcUa().getMaxReconnectAttempts()) throw ex;
+                Thread.sleep(plcConfig.getOpcUa().getReconnectDelay());
             }
         }
-        throw new RuntimeException("Failed to connect after " + attempts + " attempts");
     }
 
     private void subscribeToData() {
@@ -411,16 +447,19 @@ public class OpcUaService {
         }
     }
     
-    @PostConstruct
+ 
 
     public void saveDataFormDb() {
         try {
             List<EquipmentAlarmDetails> list = equipmentAlarmDetailsRepo.findAll();
-
             ObjectMapper mapper = new ObjectMapper();
 
-            String filePath = System.getProperty("user.dir") + "/src/main/resources/EquipmentAlarmDetails.json";
+            // Save file outside the JAR (in current working dir "data" folder)
+            String filePath = System.getProperty("user.dir") + "/data/EquipmentAlarmDetails.json";
             File file = new File(filePath);
+
+            // Ensure parent dirs exist
+            file.getParentFile().mkdirs();
 
             mapper.writeValue(file, list);
             System.out.println("Data successfully written to: " + file.getAbsolutePath());
@@ -428,21 +467,30 @@ public class OpcUaService {
             e.printStackTrace();
         }
     }
-   
+    
+
     public void saveEquipmentDetails() throws StreamWriteException, DatabindException, IOException
     {
-    	 
-    	    List<MasterEquipmentDetailsEntity> listEquipment=masterEquipmentRepo.findAll();
+    	List<EquipmentAlarmDetails> list = equipmentAlarmDetailsRepo.findAll();
+        ObjectMapper mapper = new ObjectMapper();
     	    
-    	    ObjectMapper mapper = new ObjectMapper();
+        // Save file outside the JAR (in current working dir "data" folder)
+        String filePath = System.getProperty("user.dir") + "/data/EquipmentDetails.json";
+        File file = new File(filePath);
+
+        // Ensure parent dirs exist
+        file.getParentFile().mkdirs();
+    	   
     	    
-    	    String filePath=System.getProperty("user.dir")+"/src/main/resources/EquipmentDeatails.json";
-    	    
-    	    File file=new File(filePath);
-    	    
-    	    mapper.writeValue(file,listEquipment);
+    	    mapper.writeValue(file,list);
     	    System.out.println("Data successfully written to: " + file.getAbsolutePath());
     	     
+    }
+    
+    
+    public void RetriveDatafromDb()
+    {
+    	List<EquipmentAlarmHistoryEntity> alarm=equpmentalarmHistoryrepo.findAllActiveAlarms();
     }
 
 } 

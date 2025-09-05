@@ -30,7 +30,7 @@ public class PredefinedNodeValueService {
         Map<String, List<String>> allTags = new HashMap<>();
 
         // Define all tag file keys (can be extended)
-        List<String> keys = List.of("Zone1AlarmsTag","Zone2AlarmsTag");
+        List<String> keys = List.of("Zone1AlarmsTag","Zone2AlarmsTag","Zone3AlarmsTag");
 
         for (String key : keys) {
             String fileName = key + ".json";

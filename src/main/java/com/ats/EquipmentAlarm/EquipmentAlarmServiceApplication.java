@@ -16,11 +16,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class EquipmentAlarmServiceApplication extends SpringBootServletInitializer {
  
-    @Override
-    protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
-        return application.sources(EquipmentAlarmServiceApplication.class);
-    }
-
+    
     public static void main(String[] args) {
         SpringApplication.run(EquipmentAlarmServiceApplication.class, args);
     }
@@ -34,7 +30,7 @@ public class EquipmentAlarmServiceApplication extends SpringBootServletInitializ
 
 
 				// registry.addMapping("/**").allowedOrigins("http://192.168.1.100:8080");
-			registry.addMapping("/**").allowedOrigins("http://localhost:4200","http://localhost:3000", "http://localhost:8090","http://192.168.10.179:8090","http://10.255.20.26:8080","http://10.255.20.26:80","http://10.255.20.27:80","http://10.255.20.27:8080","http://192.168.10.102:8080","http://localhost:8080","http://localhost","http://192.168.10.102:80","http://192.168.10.102:8080","http://192.168.11.154:8080");
+			registry.addMapping("/**").allowedOrigins("*").allowedMethods("*");
 	//	registry.addMapping("/**").allowedOrigins("http://192.168.10.115s:8080");
 			}
 		};
