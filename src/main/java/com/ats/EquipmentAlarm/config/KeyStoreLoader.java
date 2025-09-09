@@ -60,8 +60,7 @@ public class KeyStoreLoader {
         if (!Files.exists(keystorePath)) {
             // --- Create new keystore and certificate ---
             keyStore.load(null, PASSWORD);
-        	System.out.println("#0.5"+applicationUri);
-        	System.out.println("0.555"+clientIp);
+        
 
             KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
             generator.initialize(2048);
