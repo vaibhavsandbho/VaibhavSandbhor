@@ -30,7 +30,11 @@ public class EquipmentAlarmServiceApplication extends SpringBootServletInitializ
 
 
 				// registry.addMapping("/**").allowedOrigins("http://192.168.1.100:8080");
+<<<<<<< Updated upstream
 			registry.addMapping("/**").allowedOrigins("*").allowedMethods("*");
+=======
+			registry.addMapping("/**").allowedOrigins("http://localhost:4200","http://localhost:3000","http://localhost:3004", "http://localhost:8090","http://192.168.10.122:3000","http://192.168.10.122:3004","http://10.255.20.26:8080","http://10.255.20.26:80","http://10.255.20.27:80","http://10.255.20.27:8080","http://192.168.10.102:8080","http://localhost:8080","http://localhost","http://192.168.10.102:80","http://192.168.10.102:8080","http://192.168.11.154:8080");
+>>>>>>> Stashed changes
 	//	registry.addMapping("/**").allowedOrigins("http://192.168.10.115s:8080");
 			}
 		};

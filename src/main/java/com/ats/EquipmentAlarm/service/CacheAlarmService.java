@@ -2,9 +2,11 @@ package com.ats.EquipmentAlarm.service;
 
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.hibernate.mapping.Collection;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -13,13 +15,15 @@ import org.springframework.stereotype.Service;
 
 import com.ats.EquipmentAlarm.Entity.ActiveequipmentalarmsviewEntity;
 import com.ats.EquipmentAlarm.Entity.EquipmentAlarmHistoryDto;
+import com.ats.EquipmentAlarm.Entity.EquipmentAlarmHistoryEntity;
 import com.ats.EquipmentAlarm.Entity.Resolvedequipmentalarms;
+import com.ats.EquipmentAlarm.repo.EquipmentAlaramHistoryrepo;
 import com.ats.EquipmentAlarm.repo.activateAlaramviewRepo;
 import com.ats.EquipmentAlarm.repo.resolvedAlarmviewrepo;
 @Service
 public class CacheAlarmService {
-	
-	
+	@Autowired
+	 private EquipmentAlaramHistoryrepo aalrm;
 	@Autowired
 	
 	private activateAlaramviewRepo activateAlaramviewRepoInstance;
@@ -40,12 +44,12 @@ public class CacheAlarmService {
 	    }
 
 	    public void updatedResolvedAlarmCache(List<Resolvedequipmentalarms> resolvedalarmlist) {
-	        redisTemplate.opsForValue().set(RESOLVED_ALARMS_KEY, resolvedalarmlist, Duration.ofMinutes(1));
+	        redisTemplate.opsForValue().set(RESOLVED_ALARMS_KEY, resolvedalarmlist);
 	        System.out.println("Updated resolved alarm cache with " + resolvedalarmlist.size() + " records.");
-	    }
+	    } 
 
 	    public List<EquipmentAlarmHistoryDto> getCachedActivateAlarm() {
-	    	System.out.println(redisTemplate.expire(ACTIVE_ALARMS_KEY, Duration.ofMinutes(1)));
+	    	
 	        List<EquipmentAlarmHistoryDto> cache =
 	                (List<EquipmentAlarmHistoryDto>) redisTemplate.opsForValue().get(ACTIVE_ALARMS_KEY);
 
@@ -53,17 +57,20 @@ public class CacheAlarmService {
 	            System.out.println("Returning cached active alarms: " + cache.size());
 	            return cache;
 	        }
+	        
+	        
+	    //    List<EquipmentAlarmHistoryEntity> history=aalrm.findAllActiveAlarms();
 
-	        List<ActiveequipmentalarmsviewEntity> fresh = activateAlaramviewRepoInstance.findAll();
+//	        List<ActiveequipmentalarmsviewEntity> fresh = activateAlaramviewRepoInstance.findAll();
 
-	        List<EquipmentAlarmHistoryDto> dtoList = fresh.stream()
-	                .map(entity -> modelMapper.map(entity, EquipmentAlarmHistoryDto.class))
-	                .collect(Collectors.toList());
+       // List<EquipmentAlarmHistoryDto> dtoList = history.stream()
+	        //        .map(entity -> modelMapper.map(entity, EquipmentAlarmHistoryDto.class))
+	       //         .collect(Collectors.toList());
 
-	        updatedActiveAlarmCache(dtoList);
-	        System.out.println("Fetched fresh active alarms from DB: " + dtoList.size());
+//	        updatedActiveAlarmCache(dtoList);
+//	        System.out.println("Fetched fresh active alarms from DB: " + dtoList.size());
 
-	        return dtoList;
+	        return Collections.EMPTY_LIST;
 	    }
 
 	    public List<Resolvedequipmentalarms> getCachedReslovedAlarm() {
@@ -75,10 +82,10 @@ public class CacheAlarmService {
 	            return cache;
 	        }
 
-	        List<Resolvedequipmentalarms> freshData = resolvedAlarmviewrepoInstance.findAll();
-	        updatedResolvedAlarmCache(freshData);
-	        System.out.println("Fetched fresh resolved alarms from DB: " + freshData.size());
+//	        List<Resolvedequipmentalarms> freshData = resolvedAlarmviewrepoInstance.findAll();
+//	        updatedResolvedAlarmCache(freshData);
+	      
 
-	        return freshData;
+	        return Collections.EMPTY_LIST;
 	    }
 }

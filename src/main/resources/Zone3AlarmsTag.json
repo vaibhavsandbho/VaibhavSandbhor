@@ -1,4 +1,9 @@
+<<<<<<< Updated upstream
 [
+=======
+
+ [
+>>>>>>> Stashed changes
   "ns=3;s=\"10.Conv_ALARMS\".\"CH01_Alarm\"",
   "ns=3;s=\"10.Conv_ALARMS\".\"CH02_Alarm\"",
   "ns=3;s=\"10.Conv_ALARMS\".\"CH03_Alarm\"",

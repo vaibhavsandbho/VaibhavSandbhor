@@ -164,7 +164,7 @@ public class EquipmentAlarmController {
             }
         });
 
-        
+      
                // Persist results and update cache
         persistAndCacheUpdates(alarmsToInsert, alarmsToUpdate);
 
@@ -223,9 +223,16 @@ public class EquipmentAlarmController {
             processWordAlarm(normalizedNodeId, (ExtensionObject) alarmWordObj, alarmDetailsMap, equipmentMap, alarmsToInsert, alarmsToUpdate);
         }
         else if (alarmWordObj instanceof Boolean[]) {
+<<<<<<< Updated upstream
            
             processWordAlarmBooleanArray(normalizedNodeId, (Boolean[]) alarmWordObj, alarmDetailsMap, equipmentMap, alarmsToInsert, alarmsToUpdate);
         }else {
+=======
+            
+        	processBooleanArrayAlarm(normalizedNodeId, (Boolean[]) alarmWordObj, alarmDetailsMap, equipmentMap, alarmsToInsert, alarmsToUpdate);
+        }
+        else {
+>>>>>>> Stashed changes
             log.trace("Unsupported data type for node: {}", nodeId);
         }
     }
@@ -296,12 +303,17 @@ public class EquipmentAlarmController {
     }
     
     
+<<<<<<< Updated upstream
     private void processWordAlarmBooleanArray(String normalizedNodeId, Boolean[] extObj,
+=======
+    private void processBooleanArrayAlarm(String normalizedNodeId, Boolean[] extObj,
+>>>>>>> Stashed changes
             Map<String, EquipmentAlarmDetails> alarmDetailsMap,
             Map<Integer, MasterEquipmentDetailsEntity> equipmentMap,
             Queue<EquipmentAlarmHistoryEntity> alarmsToInsert,
             Queue<EquipmentAlarmHistoryEntity> alarmsToUpdate) {
 
+<<<<<<< Updated upstream
   for (int i = 0; i < extObj.length; i++) {
   boolean active = extObj[i];
   String alarmKey = normalizedNodeId + "_" + i;
@@ -312,6 +324,18 @@ public class EquipmentAlarmController {
  
 
 if (alarmDetail == null) {  log.trace("No alarm detail found for boolean array key: {}", alarmKey); continue;}
+=======
+
+for (int i = 0; i < extObj.length; i++) {
+boolean active = extObj[i];
+String alarmKey = normalizedNodeId + "_" + i;
+String redisKey = getRedisKey(alarmKey);
+
+EquipmentAlarmDetails alarmDetail = alarmDetailsMap.get(alarmKey);
+
+
+if (alarmDetail == null) continue;
+>>>>>>> Stashed changes
 
 
 

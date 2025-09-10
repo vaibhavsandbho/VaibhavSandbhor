@@ -68,7 +68,7 @@ public class KeyStoreLoader {
 
             SelfSignedCertificateBuilder builder = new SelfSignedCertificateBuilder(clientKeyPair);
             builder.setCommonName("Eclipse Milo OPC UA Client");
-            builder.setOrganization("MyCompany");
+            builder.setOrganization("Ats India pvt.Ltd");
             builder.setOrganizationalUnit("Automation");
             builder.setLocalityName("Pune");
             builder.setStateName("Maharashtra");

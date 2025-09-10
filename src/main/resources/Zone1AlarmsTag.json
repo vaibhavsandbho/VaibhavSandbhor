@@ -1,5 +1,9 @@
+<<<<<<< Updated upstream
 
   [
+=======
+[
+>>>>>>> Stashed changes
   "ns=3;s=\"10.MCP_ALARMS\".\"Alarm0\"",
   "ns=3;s=\"10.MCP_ALARMS\".\"Alarm1\"",
   "ns=3;s=\"10.MCP_ALARMS\".\"Alarm2\"",
@@ -87,11 +91,18 @@
   "ns=3;s=\"10.MCP_ALARMS\".\"Alarm84\"",
   "ns=3;s=\"10.MCP_ALARMS\".\"Alarm85\"",
   "ns=3;s=\"10.MCP_ALARMS\".\"Alarm86\"",
+<<<<<<< Updated upstream
+=======
+  "ns=3;s=\"10.MCP_ALARMS\".\"Alarm87\"",
+>>>>>>> Stashed changes
   "ns=3;s=\"10.MCP_ALARMS\".\"Alarm88\"",
   "ns=3;s=\"10.MCP_ALARMS\".\"Alarm89\"",
   "ns=3;s=\"10.MCP_ALARMS\".\"Alarm90\"",
   "ns=3;s=\"10.MCP_ALARMS\".\"Alarm91\"",
+<<<<<<< Updated upstream
   "ns=3;s=\"10.MCP_ALARMS\".\"Alarm87\"",
+=======
+>>>>>>> Stashed changes
   "ns=3;s=\"10.MCP_ALARMS\".\"Alarm92\"",
   "ns=3;s=\"10.MCP_ALARMS\".\"Alarm93\"",
   "ns=3;s=\"10.MCP_ALARMS\".\"Alarm94\"",

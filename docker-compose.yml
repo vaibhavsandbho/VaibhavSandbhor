@@ -1,61 +1,61 @@
 
 services:
-  backend:
-    build: C:\Users\vaibhavs\OneDrive - ATS Group\Documents\GitHub\VaibhavSandbhor
-    container_name: springboot-app
-    ports:
-      - "8090:8090"
-    depends_on:
-      - postgres
-      - redis
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/ats_mahindra_cell_db
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: root
-      SPRING_DATA_REDIS_HOST: redis
-      SPRING_DATA_REDIS_PORT: 6379
-    networks:
-      - app-network
+  # backend:
+  #   build: C:\Users\vaibhavs\OneDrive - ATS Group\Documents\GitHub\VaibhavSandbhor
+  #   container_name: springboot-app
+  #   ports:
+  #     - "8090:8090"
+  #   depends_on:
+  #     - postgres
+  #     - redis
+  #   environment:
+  #     SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/mazak_alarmdb
+  #     SPRING_DATASOURCE_USERNAME: postgres
+  #     SPRING_DATASOURCE_PASSWORD: root
+  #     SPRING_DATA_REDIS_HOST: redis
+  #     SPRING_DATA_REDIS_PORT: 6379
+  #   networks:
+  #     - app-network
 
   frontend:
     build: C:\Users\vaibhavs\OneDrive - ATS Group\Documents\GitHub\AlarmDashBoardReactApp
-    container_name: nextjs-app
+    container_name: nextjs-app-1
     ports:
       - "3000:3000"
     environment:
       NEXT_PUBLIC_API_URL: http://backend:8090
-    depends_on:
-      - backend
-    networks:
-      - app-network
+    
+    # networks:
+    #   - app-network
 
-  postgres:
-    image: postgres:16
-    container_name: postgres-db
-    restart: always
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: root
-      POSTGRES_DB: ats_mahindra_cell_db
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    networks:
-      - app-network
 
-  redis:
-    image: redis:7
-    container_name: redis-cache
-    restart: always
-    ports:
-      - "6379:6379"
-    networks:
-      - app-network
+  # postgres:
+  #   image: postgres:16
+  #   container_name: postgres-db
+  #   restart: always
+  #   environment:
+  #     POSTGRES_USER: postgres
+  #     POSTGRES_PASSWORD: root
+  #     POSTGRES_DB: mazak_alarmdb
+  #   ports:
+  #     - "5432:5432"
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #   networks:
+  #     - app-network
+
+#   redis:
+#     image: redis:7
+#     container_name: redis-cache
+#     restart: always
+#     ports:
+#       - "6379:6379"
+#     networks:
+#       - app-network
 
 networks:
   app-network:
     driver: bridge
 
-volumes:
-  postgres_data:
+# volumes:
+#   postgres_data:

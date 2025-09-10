@@ -3,14 +3,21 @@ server:
 
 spring:
   application:
+<<<<<<< Updated upstream
     name: plc-integration
+=======
+    name: EquipmentAlarm
+
+>>>>>>> Stashed changes
   datasource:
     url: jdbc:postgresql://localhost:5432/mazak_alarmdb
     username: postgres
     password: root
     driver-class-name: org.postgresql.Driver
+
   jpa:
     hibernate:
+<<<<<<< Updated upstream
       ddl-auto: update # Options: validate / create / create-drop
     show-sql: false
     database-platform: org.hibernate.dialect.PostgreSQLDialect
@@ -23,9 +30,34 @@ plc:
     security-mode: "SignAndEncrypt"
     username: "MiloUser"
     password: "AtsWms@89*"
+=======
+      ddl-auto: update   # validate / create / create-drop
+    show-sql: true
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 60000   # Optional: timeout in ms
+
+server:
+  port: 8090
+  servlet:
+    connection-timeout: 60s
+
+plc:
+  opc-ua:
+    enabled: true
+    server-url: "opc.tcp://172.28.86.21:4840"
+    security-policy: "None"
+    username: ""
+    password: ""
+>>>>>>> Stashed changes
     connection-timeout: 5000
     max-reconnect-attempts: 3
     reconnect-delay: 5000
+
   tags:
     - name: "Tag1"
       identifier: "ns=0;i=2253"
@@ -36,6 +68,7 @@ plc:
     - name: "PLC"
       identifier: "ns=3;s=PLC"
       dataType: "Object"
+
   telegrams:
     - name: "ProductionData"
       identifier: "ns=2;s=Telegram_Production"
@@ -55,6 +88,7 @@ plc:
       length: 200
       format: "Binary"
       isArray: true
+
   writer:
     enabled: false
     interval: 5000
