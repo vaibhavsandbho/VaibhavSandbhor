@@ -45,7 +45,7 @@ public class CacheAlarmService {
 	    }
 
 	    public List<EquipmentAlarmHistoryDto> getCachedActivateAlarm() {
-	    	System.out.println(redisTemplate.expire(ACTIVE_ALARMS_KEY, Duration.ofMinutes(1)));
+	    	
 	        List<EquipmentAlarmHistoryDto> cache =
 	                (List<EquipmentAlarmHistoryDto>) redisTemplate.opsForValue().get(ACTIVE_ALARMS_KEY);
 

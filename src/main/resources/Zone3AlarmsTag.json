@@ -1,20 +1,13 @@
+
 [
-  "ns=3;s=\"10.Conv_ALARMS\".\"CH01_Alarm\"",
-  "ns=3;s=\"10.Conv_ALARMS\".\"CH02_Alarm\"",
-  "ns=3;s=\"10.Conv_ALARMS\".\"CH03_Alarm\"",
-  "ns=3;s=\"10.Conv_ALARMS\".\"CH04_Alarm\"",
-  "ns=3;s=\"10.Conv_ALARMS\".\"CT01_RC_Alarm\"",
-  "ns=3;s=\"10.Conv_ALARMS\".\"CT02_RC_Alarm\"",
-  "ns=3;s=\"10.Conv_ALARMS\".\"RC01_Alarm\"",
-  "ns=3;s=\"10.Conv_ALARMS\".\"CH05_Alarm\"",
-  "ns=3;s=\"10.Conv_ALARMS\".\"CH06_Alarm\"",
-  "ns=3;s=\"10.Conv_ALARMS\".\"CH10_Alarm\"",
-  "ns=3;s=\"10.Conv_ALARMS\".\"POPUP01_Alarm\"",
-  "ns=3;s=\"10.Conv_ALARMS\".\"POPUP02_Alarm\"",
-  "ns=3;s=\"10.Conv_ALARMS\".\"POPUP03_Alarm\"",
-  "ns=3;s=\"10.Conv_ALARMS\".\"POPUP04_Alarm\"",
-  "ns=3;s=\"10.Conv_ALARMS\".\"POPUP05_Alarm\"",
-  "ns=3;s=\"10.Conv_ALARMS\".\"SYS_Alarm\"",
-  "ns=3;s=\"10.Conv_ALARMS\".\"Alarm1\"",
-  "ns=3;s=\"10.Conv_ALARMS\".\"Alarm2\""
+  "ns=3;s=\"Alarms\".\"Stacker_Alarms\"",
+  "ns=3;s=\"Alarms\".\"RB-32_Alarms\"",
+  "ns=3;s=\"Alarms\".\"RB-31_Alarms\"",
+  "ns=3;s=\"Alarms\".\"RB-22_Alarms\"",
+  "ns=3;s=\"Alarms\".\"RB-21_Alarms\"",
+  "ns=3;s=\"Alarms\".\"RB-12_Alarms\"",
+  "ns=3;s=\"Alarms\".\"RB-11_Alarms\"",
+  "ns=3;s=\"Alarms\".\"TC-2_Alarms\"",
+  "ns=3;s=\"Alarms\".\"TC-1_Alarms\""
 ]
+

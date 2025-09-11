@@ -27,6 +27,7 @@ import org.eclipse.milo.opcua.stack.core.types.builtin.ByteString;
 import org.eclipse.milo.opcua.stack.core.types.builtin.DataValue;
 import org.eclipse.milo.opcua.stack.core.types.builtin.ExtensionObject;
 import org.eclipse.milo.opcua.stack.core.types.builtin.Variant;
+import org.eclipse.milo.opcua.stack.core.types.structured.Structure;
 import org.hibernate.internal.build.AllowSysOut;
 import org.modelmapper.ModelMapper;
 
@@ -217,13 +218,15 @@ public class EquipmentAlarmController {
         String normalizedNodeId = nodeId.replace("\"", "");
 
         if (alarmWordObj instanceof Boolean) {
+        	
+        	System.out.println("#0.1");
             processBooleanAlarm(normalizedNodeId, (Boolean) alarmWordObj, alarmDetailsMap, equipmentMap, alarmsToInsert, alarmsToUpdate);
         } else if (alarmWordObj instanceof ExtensionObject) {
-       
+        	System.out.println("#0.2");
             processWordAlarm(normalizedNodeId, (ExtensionObject) alarmWordObj, alarmDetailsMap, equipmentMap, alarmsToInsert, alarmsToUpdate);
         }
         else if (alarmWordObj instanceof Boolean[]) {
-           
+        	System.out.println("#0.3");
             processWordAlarmBooleanArray(normalizedNodeId, (Boolean[]) alarmWordObj, alarmDetailsMap, equipmentMap, alarmsToInsert, alarmsToUpdate);
         }else {
             log.trace("Unsupported data type for node: {}", nodeId);
@@ -263,10 +266,50 @@ public class EquipmentAlarmController {
         Object body = extObj.getBody();
         
         
-        if (!(body instanceof ByteString)) return;
+        if (body instanceof Structure) {
+        	
+        	
+        	System.out.println("In struct");
+            Structure struct = (Structure) body;
+
+            // Example: "{Alarm_0=true, Alarm_1=false, ...}"
+            String structString = struct.toString();
+            String cleaned = structString.replaceAll("[{}]", "");
+            String[] parts = cleaned.split(",");
+
+            for (int i = 0; i < parts.length; i++) {
+                String[] kv = parts[i].trim().split("=");
+
+                if (kv.length == 2) {
+                    boolean active = Boolean.parseBoolean(kv[1].trim());
+
+                    String alarmKey = normalizedNodeId + "_" + i;
+                    String redisKey = getRedisKey(alarmKey);
+
+                    EquipmentAlarmDetails alarmDetail = alarmDetailsMap.get(alarmKey);
+
+                    System.out.println("alarmKey: " + alarmKey);
+                    System.out.println("EquipmentAlarmDetails: " + alarmDetail);
+
+                    if (alarmDetail == null) {
+                        log.trace("No alarm detail found for boolean struct key: {}", alarmKey);
+                        continue;
+                    }
+
+                    MasterEquipmentDetailsEntity equipment = equipmentMap.get(alarmDetail.getEquipmentId());
+                    if (equipment == null) {
+                        log.trace("No equipment detail found for struct key: {}", alarmKey);
+                        continue;
+                    }
+
+                    handleAlarmChange(alarmDetail, equipment, active, redisKey,
+                                      alarmsToInsert, alarmsToUpdate);
+                }
+            }
+        }
 
         byte[] bytes = ((ByteString) body).bytes();
-        
+        System.out.println("byte stream");
        
 
         for (int i = 0; i < bytes.length; i++) {
@@ -435,14 +478,16 @@ handleAlarmChange(alarmDetail, equipment, active, redisKey, alarmsToInsert, alar
         ObjectMapper mapper = new ObjectMapper();
 
         // First check external data folder
-        String externalPath = System.getProperty("user.dir") + "/data/EquipmentAlarmDetails.json";
-        File externalFile = new File(externalPath);
+       // String externalPath = System.getProperty("user.dir") + "/data/EquipmentAlarmDetails.json";
+        
+        String basePath = new File(System.getProperty("user.dir")).getAbsolutePath();
+        File externalFile = new File(basePath,"/data/EquipmentAlarmDetails.json");
 
-        if (externalFile.exists()) {
-            try (InputStream is = new FileInputStream(externalFile)) {
-                return mapper.readValue(is, new TypeReference<List<EquipmentAlarmDetails>>() {});
-            }
-        }
+//        if (externalFile.exists()) {
+//            try (InputStream is = new FileInputStream(externalFile)) {
+//                return mapper.readValue(is, new TypeReference<List<EquipmentAlarmDetails>>() {});
+//            }
+//        }
 
         // Fallback: load from classpath resource
         Resource resource = resourceLoader.getResource("classpath:EquipmentAlarmDetails.json");
@@ -455,17 +500,17 @@ handleAlarmChange(alarmDetail, equipment, active, redisKey, alarmsToInsert, alar
         ObjectMapper mapper = new ObjectMapper();
 
         // First check external data folder
-        String externalPath = System.getProperty("user.dir") + "/data/EquipmentDeatails.json";
-        File externalFile = new File(externalPath);
-
-        if (externalFile.exists()) {
-            try (InputStream is = new FileInputStream(externalFile)) {
-                return mapper.readValue(is, new TypeReference<List<MasterEquipmentDetailsEntity>>() {});
-            }
-        }
+        String basePath = new File(System.getProperty("user.dir")).getAbsolutePath();
+        File externalFile = new File(basePath,"data/EquipmentAlarmDetails.json");
+//
+//        if (externalFile.exists()) {
+//            try (InputStream is = new FileInputStream(externalFile)) {
+//                return mapper.readValue(is, new TypeReference<List<MasterEquipmentDetailsEntity>>() {});
+//            }
+//        }
 
         // Fallback: load from classpath resource
-        Resource resource = resourceLoader.getResource("classpath:EquipmentDeatails.json");
+        Resource resource = resourceLoader.getResource("classpath:EquipmentDetails.json");
         try (InputStream is = resource.getInputStream()) {
             return mapper.readValue(is, new TypeReference<List<MasterEquipmentDetailsEntity>>() {});
         }

@@ -61,6 +61,8 @@ public class OpcUaService {
     
     
     private EquipmentAlaramHistoryrepo equpmentalarmHistoryrepo;
+    
+  
   
     private OpcUaClient client;
     @Autowired
@@ -88,7 +90,10 @@ public class OpcUaService {
         if (plcConfig.getOpcUa().isEnabled()) {
             try {
                 connect();
+                RetriveDatafromDb();
+                saveDataFormDb();
                 subscribeToData();
+                saveEquipmentDetails();
             } catch (Exception e) {
                 log.error("Failed to initialize OPC UA connection", e);
             }
@@ -448,7 +453,7 @@ public class OpcUaService {
     }
     
  
-
+    @PostConstruct
     public void saveDataFormDb() {
         try {
             List<EquipmentAlarmDetails> list = equipmentAlarmDetailsRepo.findAll();
@@ -468,10 +473,10 @@ public class OpcUaService {
         }
     }
     
-
+   
     public void saveEquipmentDetails() throws StreamWriteException, DatabindException, IOException
     {
-    	List<EquipmentAlarmDetails> list = equipmentAlarmDetailsRepo.findAll();
+    	List<MasterEquipmentDetailsEntity> list = masterEquipmentRepo.findAll();
         ObjectMapper mapper = new ObjectMapper();
     	    
         // Save file outside the JAR (in current working dir "data" folder)

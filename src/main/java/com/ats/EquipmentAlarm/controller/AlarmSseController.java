@@ -3,6 +3,7 @@ package com.ats.EquipmentAlarm.controller;
 import lombok.RequiredArgsConstructor;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,37 +50,45 @@ public class AlarmSseController {
 //    }  
 //    
 	@GetMapping("/stream")
-	public SseEmitter streamAlarm() throws IOException {
-	    SseEmitter sseEmitter = new SseEmitter(0L);
-	    
+	public SseEmitter streamAlarm() {
+	    SseEmitter sseEmitter = new SseEmitter(0L); // No timeout
 
 	    Executors.newSingleThreadExecutor().submit(() -> {
 	        try {
-	        	
+	            // Initial connection
+	            sseEmitter.send(SseEmitter.event().name("init").data("connected"));
+
+	            // Keep previous state to detect changes
+	            List<EquipmentAlarmHistoryDto> previousActive = new ArrayList<>();
+	            List<Resolvedequipmentalarms> previousResolved = new ArrayList<>();
+
 	            while (true) {
-	            	sseEmitter.send(SseEmitter.event().name("init").data("connected"));// No timeout
-	                // Fetch active and resolved alarms
-	                List<EquipmentAlarmHistoryDto> activelist = euipmentAlarmService.getCachedActivateAlarm();
-	                List<Resolvedequipmentalarms> resolvedlist = euipmentAlarmService.getCachedReslovedAlarm();
+	                List<EquipmentAlarmHistoryDto> currentActive = euipmentAlarmService.getCachedActivateAlarm();
+	                List<Resolvedequipmentalarms> currentResolved = euipmentAlarmService.getCachedReslovedAlarm();
 
-	                Map<String, Object> data = new HashMap<>();
-	                data.put("resolvedlist", resolvedlist);
-	                data.put("activelist", activelist);
+	                boolean changed = !currentActive.equals(previousActive) || !currentResolved.equals(previousResolved);
 
-	                SseEmitter.SseEventBuilder event = SseEmitter.event()
-	                        .name("alarm-update")
-	                        .data(data);
+	                if (changed) {
+	                    Map<String, Object> data = new HashMap<>();
+	                    data.put("activelist", currentActive);
+	                    data.put("resolvedlist", currentResolved);
 
-	                try {
-	                    sseEmitter.send(event);
-	                } catch (IOException sendException) {
-	                    // Client disconnected or network issue
-	                    sseEmitter.completeWithError(sendException);
-	                    break;
+	                    try {
+	                        sseEmitter.send(SseEmitter.event().name("alarm-update").data(data));
+	                    } catch (IOException sendException) {
+	                        sseEmitter.completeWithError(sendException);
+	                        break;
+	                    }
+
+	                    // Update previous state
+	                    previousActive = new ArrayList<>(currentActive);
+	                    previousResolved = new ArrayList<>(currentResolved);
 	                }
 
-	                Thread.sleep(10000);
+	                // Sleep for a short interval (1-2 sec) to check for updates faster
+	                Thread.sleep(2000);
 	            }
+
 	        } catch (Exception e) {
 	            sseEmitter.completeWithError(e);
 	        }
