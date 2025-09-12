@@ -37,7 +37,7 @@ public interface EquipmentAlaramHistoryrepo extends JpaRepository<EquipmentAlarm
 
 
 
-	 @Query("SELECT e FROM EquipmentAlarmHistoryEntity e WHERE e.equipmentAlarmStatus = true")
+	 @Query("SELECT e FROM EquipmentAlarmHistoryEntity e WHERE e.equipmentAlarmStatus = true AND alarmResolvedDatetime='NA'")
 	 List<EquipmentAlarmHistoryEntity> findAllActiveAlarms();
 	 
 	 EquipmentAlarmHistoryEntity  findByEquipmentAlarmIdAndEquipmentAlarmStatusTrue(int equipmentId);

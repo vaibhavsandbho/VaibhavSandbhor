@@ -269,7 +269,7 @@ public class EquipmentAlarmController {
         if (body instanceof Structure) {
         	
         	
-        	System.out.println("In struct");
+        	
             Structure struct = (Structure) body;
 
             // Example: "{Alarm_0=true, Alarm_1=false, ...}"
@@ -309,7 +309,7 @@ public class EquipmentAlarmController {
         }
 
         byte[] bytes = ((ByteString) body).bytes();
-        System.out.println("byte stream");
+       
        
 
         for (int i = 0; i < bytes.length; i++) {
@@ -372,17 +372,21 @@ handleAlarmChange(alarmDetail, equipment, active, redisKey, alarmsToInsert, alar
 
         boolean wasActive = Boolean.parseBoolean(redisTemplate.opsForValue().get(redisKey));
         String now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        
+        EquipmentAlarmHistoryEntity history =
+                equipmentHistoryrepo.findByEquipmentAlarmIdAndEquipmentAlarmStatusTrue(detail.getEquipmentAlarmId());
+        
+        
+        
 
-        if (isActive && !wasActive) {
+        if (isActive && !wasActive && history==null) {
             EquipmentAlarmHistoryEntity newAlarm = createHistoryEntity(detail, equipment, now);
             redisTemplate.opsForValue().set(redisKey, "true");
             alarmsToInsert.add(newAlarm);
             log.info("NEW ALARM TRIGGERED - Equipment: {}, Alarm: {}, Time: {}", 
                     equipment.getEquipmentName(), detail.getEquipmentAlarmName(), now);
         } else if (!isActive && wasActive) {
-            EquipmentAlarmHistoryEntity history =
-                    equipmentHistoryrepo.findByEquipmentAlarmIdAndEquipmentAlarmStatusTrue(detail.getEquipmentAlarmId());
-            
+           
             if (history != null) {
                 history.setAlarmResolvedDatetime(now);
                 history.setEquipmentAlarmStatus(false);

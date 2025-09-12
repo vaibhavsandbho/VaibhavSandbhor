@@ -20,6 +20,7 @@ import org.eclipse.milo.opcua.stack.core.types.enumerated.MessageSecurityMode;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.MonitoringMode;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.TimestampsToReturn;
 import org.eclipse.milo.opcua.stack.core.types.structured.*;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -35,10 +36,12 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import com.ats.EquipmentAlarm.Entity.EquipmentAlarmDetails;
+import com.ats.EquipmentAlarm.Entity.EquipmentAlarmHistoryDto;
 import com.ats.EquipmentAlarm.Entity.EquipmentAlarmHistoryEntity;
 import com.ats.EquipmentAlarm.Entity.MasterEquipmentDetailsEntity;
 import com.ats.EquipmentAlarm.config.KeyStoreLoader;
@@ -59,10 +62,13 @@ import com.google.common.collect.ImmutableList;
 public class OpcUaService {
     private final PlcConfiguration plcConfig;
     
-    
+    @Autowired
     private EquipmentAlaramHistoryrepo equpmentalarmHistoryrepo;
+    @Autowired
+    private CacheAlarmService  cacheAlarmService;
     
-  
+	@Autowired
+	private ModelMapper modelMapper;
   
     private OpcUaClient client;
     @Autowired
@@ -89,11 +95,21 @@ public class OpcUaService {
     public void init() {
         if (plcConfig.getOpcUa().isEnabled()) {
             try {
-                connect();
-                RetriveDatafromDb();
-                saveDataFormDb();
-                subscribeToData();
-                saveEquipmentDetails();
+            	log.info("Connecting...");
+            	connect();
+            	log.info("Retrieving data from DB...");
+            	RetriveDatafromDb();
+            	log.info("Saving data from DB...");
+            	saveDataFormDb();
+            	log.info("Subscribing to data...");
+            	subscribeToData();
+            	log.info("Saving equipment details...");
+            	saveEquipmentDetails();
+            	log.info("Initialization complete.");
+            	
+            	RetriveDatafromDb();
+            	log.info("Retriving  Data from database.");
+
             } catch (Exception e) {
                 log.error("Failed to initialize OPC UA connection", e);
             }
@@ -453,7 +469,7 @@ public class OpcUaService {
     }
     
  
-    @PostConstruct
+   
     public void saveDataFormDb() {
         try {
             List<EquipmentAlarmDetails> list = equipmentAlarmDetailsRepo.findAll();
@@ -492,10 +508,22 @@ public class OpcUaService {
     	     
     }
     
-    
+
     public void RetriveDatafromDb()
     {
     	List<EquipmentAlarmHistoryEntity> alarm=equpmentalarmHistoryrepo.findAllActiveAlarms();
+    	
+    	
+    	System.out.println("Alamr size"+alarm.size());
+    	
+    	List<EquipmentAlarmHistoryDto> cachedDtos=alarm.stream()
+         .map(entity -> modelMapper.map(entity, EquipmentAlarmHistoryDto.class))
+         .collect(Collectors.toList());
+    	
+    	 cacheAlarmService.redisTemplate.opsForValue().set(cacheAlarmService.ACTIVE_ALARMS_KEY, cachedDtos);
+
+    	
+    	
     }
 
 } 

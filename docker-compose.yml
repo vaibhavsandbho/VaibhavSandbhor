@@ -9,7 +9,7 @@ services:
       - postgres
       - redis
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/ats_mahindra_cell_db
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/BBIL_Alarm_DB
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: root
       SPRING_DATA_REDIS_HOST: redis
@@ -23,7 +23,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      NEXT_PUBLIC_API_URL: http://backend:8090
+      NEXT_PUBLIC_API_URL: http://localhost:8090
     depends_on:
       - backend
     networks:
@@ -36,7 +36,7 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: root
-      POSTGRES_DB: ats_mahindra_cell_db
+      POSTGRES_DB: BBIL_Alarm_DB
     ports:
       - "5432:5432"
     volumes:
