@@ -1,35 +1,38 @@
-
 services:
-  backend:
-    build: C:\Users\vaibhavs\OneDrive - ATS Group\Documents\GitHub\VaibhavSandbhor
+  springboot-app:
+    build: .
     container_name: springboot-app
     ports:
       - "8090:8090"
     depends_on:
-      - postgres
-      - redis
+      - postgres-db
+      - redis-cache
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/BBIL_Alarm_DB
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-db:5432/BBIL_Alarm_DB
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: root
-      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_HOST: redis-cache
       SPRING_DATA_REDIS_PORT: 6379
     networks:
       - app-network
 
-  frontend:
-    build: C:\Users\vaibhavs\OneDrive - ATS Group\Documents\GitHub\AlarmDashBoardReactApp
+  nextjs-app:
+    build:
+     context: ./../AlarmDashBoardReactApp
+     args:
+       NEXT_PUBLIC_API_URL: http://host.docker.internal:8090
     container_name: nextjs-app
+    
     ports:
       - "3000:3000"
     environment:
-      NEXT_PUBLIC_API_URL: http://localhost:8090
+      NEXT_PUBLIC_API_URL: http://host.docker.internal:8090
     depends_on:
-      - backend
+      - springboot-app
     networks:
       - app-network
 
-  postgres:
+  postgres-db:
     image: postgres:16
     container_name: postgres-db
     restart: always
@@ -44,7 +47,7 @@ services:
     networks:
       - app-network
 
-  redis:
+  redis-cache:
     image: redis:7
     container_name: redis-cache
     restart: always
