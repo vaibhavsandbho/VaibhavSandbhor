@@ -117,34 +117,53 @@ public class OpcUaService {
     }
 
 
+//    private void connect() throws Exception {
+//        System.out.println("Starting OPC UA connection...");
+//
+//        SecurityPolicy securityPolicy = SecurityPolicy.valueOf(plcConfig.getOpcUa().getSecurityPolicy());
+//        MessageSecurityMode securityMode = MessageSecurityMode.valueOf(plcConfig.getOpcUa().getSecurityMode());
+//
+//        System.out.println("SecurityPolicy: " + securityPolicy + ", SecurityMode: " + securityMode);
+//
+//        Path securityDir = Paths.get("security");
+//        Files.createDirectories(securityDir);
+//
+//        // Load or create the client certificate
+//        KeyStoreLoader loader = new KeyStoreLoader().load(securityDir);
+//        System.out.println("Client certificate loaded. ApplicationUri: " + loader.getApplicationUri());
+//
+//        // Build OPC UA client
+//        client = OpcUaClient.create(
+//            plcConfig.getOpcUa().getServerUrl(),
+//            endpoints -> endpoints.stream()
+//                .filter(e -> e.getSecurityPolicyUri().equals(securityPolicy.getUri()))
+//                .filter(e -> e.getSecurityMode().equals(securityMode))
+//                .findFirst(),
+//            configBuilder -> configBuilder
+//                .setApplicationName(LocalizedText.english("PLC Integration Client"))
+//                .setApplicationUri(loader.getApplicationUri())  // MUST match certificate
+//                .setKeyPair(loader.getClientKeyPair())
+//                .setCertificate(loader.getClientCertificate())
+//                .setCertificateChain(loader.getClientCertificateChain())
+//                .setRequestTimeout(UInteger.valueOf(plcConfig.getOpcUa().getConnectionTimeout()))
+//                .setIdentityProvider(createIdentityProvider())
+//                .build()
+//        );
+//
+//        connectWithRetry();
+//    }
+    
     private void connect() throws Exception {
-        System.out.println("Starting OPC UA connection...");
-
         SecurityPolicy securityPolicy = SecurityPolicy.valueOf(plcConfig.getOpcUa().getSecurityPolicy());
-        MessageSecurityMode securityMode = MessageSecurityMode.valueOf(plcConfig.getOpcUa().getSecurityMode());
-
-        System.out.println("SecurityPolicy: " + securityPolicy + ", SecurityMode: " + securityMode);
-
-        Path securityDir = Paths.get("security");
-        Files.createDirectories(securityDir);
-
-        // Load or create the client certificate
-        KeyStoreLoader loader = new KeyStoreLoader().load(securityDir);
-        System.out.println("Client certificate loaded. ApplicationUri: " + loader.getApplicationUri());
-
-        // Build OPC UA client
+        
         client = OpcUaClient.create(
             plcConfig.getOpcUa().getServerUrl(),
             endpoints -> endpoints.stream()
                 .filter(e -> e.getSecurityPolicyUri().equals(securityPolicy.getUri()))
-                .filter(e -> e.getSecurityMode().equals(securityMode))
                 .findFirst(),
             configBuilder -> configBuilder
                 .setApplicationName(LocalizedText.english("PLC Integration Client"))
-                .setApplicationUri(loader.getApplicationUri())  // MUST match certificate
-                .setKeyPair(loader.getClientKeyPair())
-                .setCertificate(loader.getClientCertificate())
-                .setCertificateChain(loader.getClientCertificateChain())
+                .setApplicationUri("urn:plc:client")
                 .setRequestTimeout(UInteger.valueOf(plcConfig.getOpcUa().getConnectionTimeout()))
                 .setIdentityProvider(createIdentityProvider())
                 .build()

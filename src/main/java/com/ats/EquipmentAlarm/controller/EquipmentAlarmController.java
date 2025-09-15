@@ -67,6 +67,8 @@ public class EquipmentAlarmController {
 	
     private final EquipmentAlaramHistoryrepo equipmentHistoryrepo;
     
+    @Autowired
+    private  AlarmSseController alarmSseController;
  
     private EquipmetAlarmDetailsRepo equipmentAlarmDetailsRepo;
              
@@ -185,8 +187,13 @@ public class EquipmentAlarmController {
             .collect(Collectors.toMap(
                 e -> {
                     String normalizedTag = e.getEquipmentAlarmTag().replace("\"", "").trim();
-                    String baseTag = extractTagBase(normalizedTag);
-                    return baseTag + "_" + e.getBitNo();
+                    
+                    if((normalizedTag.contains("CH") || normalizedTag.contains("RO")))
+                    {
+                   String baseTag = extractTagBase(normalizedTag);
+                   return baseTag + "_" + e.getBitNo();
+                    }
+                    return normalizedTag + "_" + e.getBitNo();
                 },
                 Function.identity(),
                 (existing, replacement) -> existing
@@ -219,14 +226,14 @@ public class EquipmentAlarmController {
 
         if (alarmWordObj instanceof Boolean) {
         	
-        	System.out.println("#0.1");
+        
             processBooleanAlarm(normalizedNodeId, (Boolean) alarmWordObj, alarmDetailsMap, equipmentMap, alarmsToInsert, alarmsToUpdate);
         } else if (alarmWordObj instanceof ExtensionObject) {
-        	System.out.println("#0.2");
+
             processWordAlarm(normalizedNodeId, (ExtensionObject) alarmWordObj, alarmDetailsMap, equipmentMap, alarmsToInsert, alarmsToUpdate);
         }
         else if (alarmWordObj instanceof Boolean[]) {
-        	System.out.println("#0.3");
+        
             processWordAlarmBooleanArray(normalizedNodeId, (Boolean[]) alarmWordObj, alarmDetailsMap, equipmentMap, alarmsToInsert, alarmsToUpdate);
         }else {
             log.trace("Unsupported data type for node: {}", nodeId);
@@ -245,7 +252,8 @@ public class EquipmentAlarmController {
         String redisKey = getRedisKey(alarmKey);
 
         EquipmentAlarmDetails alarmDetail = alarmDetailsMap.get(alarmKey);
-    
+        
+       
       
         
      
@@ -288,9 +296,7 @@ public class EquipmentAlarmController {
 
                     EquipmentAlarmDetails alarmDetail = alarmDetailsMap.get(alarmKey);
 
-                    System.out.println("alarmKey: " + alarmKey);
-                    System.out.println("EquipmentAlarmDetails: " + alarmDetail);
-
+                 
                     if (alarmDetail == null) {
                         log.trace("No alarm detail found for boolean struct key: {}", alarmKey);
                         continue;
@@ -320,7 +326,7 @@ public class EquipmentAlarmController {
             EquipmentAlarmDetails alarmDetail = alarmDetailsMap.get(alarmKey);
             
             
-            
+           
         
             if (alarmDetail == null){    
             log.trace("No alarm detail found for boolean array key: {}", alarmKey);
@@ -379,7 +385,7 @@ handleAlarmChange(alarmDetail, equipment, active, redisKey, alarmsToInsert, alar
         
         
 
-        if (isActive && !wasActive && history==null) {
+        if (isActive && !wasActive ) {
             EquipmentAlarmHistoryEntity newAlarm = createHistoryEntity(detail, equipment, now);
             redisTemplate.opsForValue().set(redisKey, "true");
             alarmsToInsert.add(newAlarm);

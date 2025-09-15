@@ -1,13 +1,36 @@
 
 [
-  "ns=3;s=\"Alarms\".\"Stacker_Alarms\"",
-  "ns=3;s=\"Alarms\".\"RB-32_Alarms\"",
-  "ns=3;s=\"Alarms\".\"RB-31_Alarms\"",
-  "ns=3;s=\"Alarms\".\"RB-22_Alarms\"",
-  "ns=3;s=\"Alarms\".\"RB-21_Alarms\"",
-  "ns=3;s=\"Alarms\".\"RB-12_Alarms\"",
-  "ns=3;s=\"Alarms\".\"RB-11_Alarms\"",
-  "ns=3;s=\"Alarms\".\"TC-2_Alarms\"",
-  "ns=3;s=\"Alarms\".\"TC-1_Alarms\""
+
+  "ns=3;s=\"6.PLC_TO_WMS_MCP_Alarms\".\"CH01\"",
+  "ns=3;s=\"6.PLC_TO_WMS_MCP_Alarms\".\"CH02\"",
+  "ns=3;s=\"6.PLC_TO_WMS_MCP_Alarms\".\"CH09\"",
+  "ns=3;s=\"6.PLC_TO_WMS_MCP_Alarms\".\"CH10\"",
+  "ns=3;s=\"6.PLC_TO_WMS_MCP_Alarms\".\"RO08\"",
+  "ns=3;s=\"6.PLC_TO_WMS_MCP_Alarms\".\"RO03\"",
+  "ns=3;s=\"6.PLC_TO_WMS_MCP_Alarms\".\"MCP Emergency Activated\"",
+  "ns=3;s=\"6.PLC_TO_WMS_MCP_Alarms\".\"MCP Surge Supressor Fault\"",
+  "ns=3;s=\"6.PLC_TO_WMS_MCP_Alarms\".\"MCP Safety Relay Fault\"",
+  "ns=3;s=\"6.PLC_TO_WMS_MCP_Alarms\".\"MCP Single phase prevenyter Fault\"",
+  "ns=3;s=\"6.PLC_TO_WMS_MCP_Alarms\".\"MCP Ethernet Switch Fault\"",
+  "ns=3;s=\"6.PLC_TO_WMS_MCP_Alarms\".\"MCP Panel AC Power OFF\"",
+  "ns=3;s=\"6.PLC_TO_WMS_MCP_Alarms\".\"MCP 24V Safety OFF\"",
+  "ns=3;s=\"6.PLC_TO_WMS_MCP_Alarms\".\"MCP AC Not Healthy\"",
+  "ns=3;s=\"6.PLC_TO_WMS_MCP_Alarms\".\"CH-01Break Contactor ON FB Fault\"",
+  "ns=3;s=\"6.PLC_TO_WMS_MCP_Alarms\".\"CH-10 Break Contactor ON FB Fault\"",
+  "ns=3;s=\"6.PLC_TO_WMS_MCP_Alarms\".\"RO-03 Break Contactor ON FB Fault\"",
+  "ns=3;s=\"6.PLC_TO_WMS_MCP_Alarms\".\"RO-08 Break Contactor ON FB Fault\"",
+  "ns=3;s=\"6.PLC_TO_WMS_MCP_Alarms\".\"Infeed Gate Open Fault\"",
+  "ns=3;s=\"6.PLC_TO_WMS_MCP_Alarms\".\"Outfeed Gate Open Fault\"",
+  "ns=3;s=\"6.PLC_TO_WMS_MCP_Alarms\".\"OUTFEED LIGHT CURTAIN FAULT\"",
+  "ns=3;s=\"6.PLC_TO_WMS_MCP_Alarms\".\"INFEED LIGHT CURTAIN FAULT\"",
+  "ns=3;s=\"6.PLC_TO_WMS_MCP_Alarms\".\"HEIGHT PROFILE FAULT\"",
+  "ns=3;s=\"6.PLC_TO_WMS_MCP_Alarms\".\"REAR PROFILE FAULT\"",
+  "ns=3;s=\"6.PLC_TO_WMS_MCP_Alarms\".\"Load cell Communication Fault\"",
+  "ns=3;s=\"6.PLC_TO_WMS_MCP_Alarms\".\"Low AIR pressure\"",
+  "ns=3;s=\"6.PLC_TO_WMS_MCP_Alarms\".\"Hand Scanner Communication Fault\"",
+  "ns=3;s=\"6.PLC_TO_WMS_MCP_Alarms\".\"CLAMP TIMEOUT FAULT\"",
+  "ns=3;s=\"6.PLC_TO_WMS_MCP_Alarms\".\"WMS Data InValidation Fault\""
+
+
 ]
 

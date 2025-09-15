@@ -1,11 +1,11 @@
 server:
-  port: 8090
+  port: 8092
 
 spring:
   application:
     name: plc-integration
   datasource:
-    url: jdbc:postgresql://localhost:5432/BBIL_Alarm_DB
+    url: jdbc:postgresql://localhost:5432/ats_lumax_db
     username: postgres
     password: root
     driver-class-name: org.postgresql.Driver
@@ -18,11 +18,11 @@ spring:
 plc:
   opc-ua:
     enabled: true
-    server-url: "opc.tcp://10.10.56.131:4840"   # corrected with colon before 4840
-    security-policy: "Basic256Sha256"
-    security-mode: "SignAndEncrypt"
-    username: "user1"
-    password: "AtsWms123*"
+    server-url: "opc.tcp://192.168.103.24:4840"   # corrected with colon before 4840
+    security-policy: "None"
+#    security-mode: "SignAndEncrypt"
+    username: ""
+    password: ""
     connection-timeout: 5000
     max-reconnect-attempts: 3
     reconnect-delay: 5000
