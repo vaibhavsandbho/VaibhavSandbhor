@@ -96,8 +96,8 @@ public class StackerHealthController {
                             // Log missions
                             for (OutfeedMissionRuntimeDetailsEntity o : outfeedList) {
                                 String msg = String.format(
-                                        "%s | Mode: Semiauto | MissionId: %s | PositionId: %s | Source: Outfeed",
-                                        stackerName, o.getOutfeedMissionId(), o.getPositionId());
+                                        "%s | Mode: Semiauto | MissionId: %s | PositionId: %s | Source: Outfeed | positioname",
+                                        stackerName, o.getOutfeedMissionId(), o.getPositionId(),o.getPositionName());
                                 log.info(msg);
                                 logs.add(msg);
                             }
