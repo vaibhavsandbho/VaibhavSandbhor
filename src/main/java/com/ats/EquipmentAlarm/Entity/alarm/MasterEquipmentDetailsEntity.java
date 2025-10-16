@@ -1,4 +1,6 @@
-package com.ats.EquipmentAlarm.Entity;
+package com.ats.EquipmentAlarm.Entity.alarm;
+
+import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -22,7 +24,7 @@ public class MasterEquipmentDetailsEntity {
     private Integer userId;
 
     @Column(name = "cdatetime")
-    private String cdatetime;
+    private LocalDateTime  cdatetime;
 
     @Column(name = "equipment_name", length = 200)
     private String equipmentName;

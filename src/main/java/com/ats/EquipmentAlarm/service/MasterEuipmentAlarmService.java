@@ -16,8 +16,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
-import com.ats.EquipmentAlarm.Entity.EquipmentAlarmHistoryEntity;
-import com.ats.EquipmentAlarm.repo.EquipmentAlaramHistoryrepo;
+import com.ats.EquipmentAlarm.Entity.alarm.EquipmentAlarmHistoryEntity;
+import com.ats.EquipmentAlarm.repo.alarm.EquipmentAlaramHistoryrepo;
 import com.google.common.base.Predicate;
 
 @Service

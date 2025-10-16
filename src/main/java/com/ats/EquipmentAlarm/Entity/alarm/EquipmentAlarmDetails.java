@@ -1,4 +1,4 @@
-package com.ats.EquipmentAlarm.Entity;
+package com.ats.EquipmentAlarm.Entity.alarm;
 
 import jakarta.persistence.*;
 import lombok.Data;

@@ -2,6 +2,7 @@ package com.ats.EquipmentAlarm.service;
 
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -11,21 +12,19 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import com.ats.EquipmentAlarm.Entity.ActiveequipmentalarmsviewEntity;
-import com.ats.EquipmentAlarm.Entity.EquipmentAlarmHistoryDto;
-import com.ats.EquipmentAlarm.Entity.Resolvedequipmentalarms;
-import com.ats.EquipmentAlarm.repo.activateAlaramviewRepo;
-import com.ats.EquipmentAlarm.repo.resolvedAlarmviewrepo;
+import com.ats.EquipmentAlarm.Entity.alarm.ActiveequipmentalarmsviewEntity;
+import com.ats.EquipmentAlarm.Entity.alarm.EquipmentAlarmHistoryDto;
+import com.ats.EquipmentAlarm.Entity.alarm.Resolvedequipmentalarms;
+import com.ats.EquipmentAlarm.repo.alarm.activateAlaramviewRepo;
+
 @Service
 public class CacheAlarmService {
 	
 	
-	@Autowired
-	
+//	@Autowired
+//	
 	private activateAlaramviewRepo activateAlaramviewRepoInstance;
-	
-	@Autowired
-	private resolvedAlarmviewrepo resolvedAlarmviewrepoInstance;
+
 	
 	@Autowired
 	private ModelMapper modelMapper;
@@ -45,27 +44,46 @@ public class CacheAlarmService {
 	    }
 
 	    public List<EquipmentAlarmHistoryDto> getCachedActivateAlarm() {
-	    	System.out.println(redisTemplate.expire(ACTIVE_ALARMS_KEY, Duration.ofMinutes(1)));
-	        List<EquipmentAlarmHistoryDto> cache =
-	                (List<EquipmentAlarmHistoryDto>) redisTemplate.opsForValue().get(ACTIVE_ALARMS_KEY);
+	        try {
+	            // Refresh cache expiration
+	            if (redisTemplate.hasKey(ACTIVE_ALARMS_KEY)) {
+	               // redisTemplate.expire(ACTIVE_ALARMS_KEY, Duration.ofMinutes(1));
+	            }
 
-	        if (cache != null && !cache.isEmpty()) {
-	            System.out.println("Returning cached active alarms: " + cache.size());
+	            // Try to get cached alarms
+	            List<EquipmentAlarmHistoryDto> cache =
+	                    (List<EquipmentAlarmHistoryDto>) redisTemplate.opsForValue().get(ACTIVE_ALARMS_KEY);
+
+	            if (cache != null && !cache.isEmpty()) {
+	                System.out.println("Returning cached active alarms: " + cache.size());
+	                return cache;
+	            }
+
+//	            // Fetch fresh data from DB
+//	            List<ActiveequipmentalarmsviewEntity> fresh = activateAlaramviewRepoInstance.findAll();
+//	            if (fresh == null || fresh.isEmpty()) {
+//	                return Collections.emptyList(); // Return empty list if DB returns null or empty
+//	            }
+//
+//	            // Map entities to DTO
+//	            List<EquipmentAlarmHistoryDto> dtoList = fresh.stream()
+//	                    .map(entity -> modelMapper.map(entity, EquipmentAlarmHistoryDto.class))
+//	                    .collect(Collectors.toList());
+//
+//	            // Update cache
+	            updatedActiveAlarmCache(cache);
+
 	            return cache;
+
+	        } catch (Exception e) {
+	            // Log error and return empty list
+	            System.err.println("Error fetching active alarms: " + e.getMessage());
+	            e.printStackTrace();
+	            return Collections.emptyList();
 	        }
-
-	        List<ActiveequipmentalarmsviewEntity> fresh = activateAlaramviewRepoInstance.findAll();
-
-	        List<EquipmentAlarmHistoryDto> dtoList = fresh.stream()
-	                .map(entity -> modelMapper.map(entity, EquipmentAlarmHistoryDto.class))
-	                .collect(Collectors.toList());
-
-	        updatedActiveAlarmCache(dtoList);
-	        System.out.println("Fetched fresh active alarms from DB: " + dtoList.size());
-
-	        return dtoList;
 	    }
 
+//
 	    public List<Resolvedequipmentalarms> getCachedReslovedAlarm() {
 	        List<Resolvedequipmentalarms> cache =
 	                (List<Resolvedequipmentalarms>) redisTemplate.opsForValue().get(RESOLVED_ALARMS_KEY);
@@ -74,11 +92,11 @@ public class CacheAlarmService {
 	            System.out.println("Returning cached resolved alarms: " + cache.size());
 	            return cache;
 	        }
+//
+//	        List<Resolvedequipmentalarms> freshData = resolvedAlarmviewrepoInstance.findAll();
+//	        updatedResolvedAlarmCache(freshData);
+//	        System.out.println("Fetched fresh resolved alarms from DB: " + freshData.size());
 
-	        List<Resolvedequipmentalarms> freshData = resolvedAlarmviewrepoInstance.findAll();
-	        updatedResolvedAlarmCache(freshData);
-	        System.out.println("Fetched fresh resolved alarms from DB: " + freshData.size());
-
-	        return freshData;
+	        return cache;
 	    }
 }

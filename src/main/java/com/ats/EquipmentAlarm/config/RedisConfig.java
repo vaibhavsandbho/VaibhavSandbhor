@@ -8,8 +8,8 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
-import com.ats.EquipmentAlarm.Entity.ActiveequipmentalarmsviewEntity;
-import com.ats.EquipmentAlarm.Entity.Resolvedequipmentalarms;
+import com.ats.EquipmentAlarm.Entity.alarm.ActiveequipmentalarmsviewEntity;
+import com.ats.EquipmentAlarm.Entity.alarm.Resolvedequipmentalarms;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;

@@ -1,16 +1,13 @@
-package com.ats.EquipmentAlarm.Entity;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import lombok.Data;
+package com.ats.EquipmentAlarm.Entity.alarm;
 
-@Table(name = "active_equipment_alarms", schema = "public")
+import java.time.LocalDateTime;
+
+import jakarta.persistence.*;
+import lombok.Data;
 @Entity
+@Table(name = "equipment_alarm_history", schema = "public")
 @Data
-public class ActiveequipmentalarmsviewEntity {
+public class EquipmentAlarmHistoryEntity {
 	
 	
 	@Id
@@ -44,4 +41,6 @@ public class ActiveequipmentalarmsviewEntity {
 
 	    @Column(name = "equipment_alarm_resolved_datetime")
 	    private String alarmResolvedDatetime;
+		  
+
 }

@@ -26,11 +26,11 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.ats.EquipmentAlarm.Entity.EquipmentAlarmDetails;
-import com.ats.EquipmentAlarm.Entity.MasterEquipmentDetailsEntity;
+import com.ats.EquipmentAlarm.Entity.alarm.EquipmentAlarmDetails;
+import com.ats.EquipmentAlarm.Entity.alarm.MasterEquipmentDetailsEntity;
 import com.ats.EquipmentAlarm.config.PlcConfiguration;
-import com.ats.EquipmentAlarm.repo.EquipmetAlarmDetailsRepo;
-import com.ats.EquipmentAlarm.repo.MasterEquipmentRepo;
+import com.ats.EquipmentAlarm.repo.alarm.EquipmetAlarmDetailsRepo;
+import com.ats.EquipmentAlarm.repo.alarm.MasterEquipmentRepo;
 import com.fasterxml.jackson.core.exc.StreamWriteException;
 import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.ObjectMapper;

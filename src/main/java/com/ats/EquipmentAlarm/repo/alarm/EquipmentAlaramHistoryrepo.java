@@ -1,4 +1,4 @@
-package com.ats.EquipmentAlarm.repo;
+package com.ats.EquipmentAlarm.repo.alarm;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -10,7 +10,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import com.ats.EquipmentAlarm.Entity.EquipmentAlarmHistoryEntity;
+import com.ats.EquipmentAlarm.Entity.alarm.EquipmentAlarmHistoryEntity;
 
 public interface EquipmentAlaramHistoryrepo extends JpaRepository<EquipmentAlarmHistoryEntity,Integer> {
 	

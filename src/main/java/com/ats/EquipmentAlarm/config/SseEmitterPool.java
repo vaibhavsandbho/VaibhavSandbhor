@@ -6,7 +6,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import com.ats.EquipmentAlarm.Entity.EquipmentAlarmHistoryEntity;
+import com.ats.EquipmentAlarm.Entity.alarm.EquipmentAlarmHistoryEntity;
 
 import java.io.IOException;
 import java.util.List;

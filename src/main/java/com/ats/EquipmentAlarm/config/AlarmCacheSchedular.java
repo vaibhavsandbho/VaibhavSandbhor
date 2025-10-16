@@ -11,10 +11,10 @@ public class AlarmCacheSchedular {
 	@Autowired
 	private EquipmentAlarmviewService equipmentalarmservice;
 	
-	@Scheduled(fixedRate = 10*60*100)//for update cache from 10 minures
-	public void refreshcache()
-	{
-		equipmentalarmservice.updateAlarmCaches();
-	}
+//	@Scheduled(fixedRate = 10*60*100)//for update cache from 10 minures
+//	public void refreshcache()
+//	{
+//		equipmentalarmservice.updateAlarmCaches();
+//	}
 
 }

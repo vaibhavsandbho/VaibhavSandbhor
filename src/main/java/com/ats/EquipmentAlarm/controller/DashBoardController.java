@@ -12,9 +12,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.ats.EquipmentAlarm.Entity.EquipmentAlarmHistoryEntity;
-import com.ats.EquipmentAlarm.repo.EquipmentAlaramHistoryrepo;
-import com.ats.EquipmentAlarm.repo.EquipmetAlarmDetailsRepo;
+import com.ats.EquipmentAlarm.Entity.alarm.EquipmentAlarmHistoryEntity;
+import com.ats.EquipmentAlarm.repo.alarm.EquipmentAlaramHistoryrepo;
+import com.ats.EquipmentAlarm.repo.alarm.EquipmetAlarmDetailsRepo;
 import com.ats.EquipmentAlarm.service.MasterEuipmentAlarmService;
 
 @RestController

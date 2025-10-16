@@ -1,9 +1,5 @@
-
-    
-
- 
-
 [
+  
   "ns=3;s=\"3.PLC_TO_WMS_ST1_ALM\".\"Alarm0\"",
   "ns=3;s=\"3.PLC_TO_WMS_ST1_ALM\".\"Alarm1\"",
   "ns=3;s=\"3.PLC_TO_WMS_ST1_ALM\".\"Alarm2\"",
@@ -295,9 +291,6 @@
   "ns=3;s=\"7.PLC_TO_WMS_ST3_ALM\".\"Alarm94\"",
   "ns=3;s=\"7.PLC_TO_WMS_ST3_ALM\".\"Alarm95\"",
   "ns=3;s=\"7.PLC_TO_WMS_ST3_ALM\".\"Alarm96\""
-
-  
-
 ]
 
 

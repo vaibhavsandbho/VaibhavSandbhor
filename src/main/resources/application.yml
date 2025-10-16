@@ -1,45 +1,48 @@
 spring:
   application:
     name: EquipmentAlarm
-  datasource:
-    url: jdbc:postgresql://localhost:5432/ats_mahindra_cell_db
-    username: postgres
-    password: root
-    driver-class-name: org.postgresql.Driver
+
   jpa:
     hibernate:
-      ddl-auto: update # Options: validate / create / create-drop
+      ddl-auto: none
     show-sql: true
     database-platform: org.hibernate.dialect.PostgreSQLDialect
-    services:
-  app:
-    build: .
-    depends_on:
-      - redis
-    environment:
-      SPRING_REDIS_HOST: redis
+
+  datasource:
+    alarm:
+      url: jdbc:postgresql://localhost:5432/ats_mahindra_cell_db
+      username: postgres
+      password: root
+      driver-class-name: org.postgresql.Driver
+
+    position:
+      url: jdbc:sqlserver://localhost:1433;databaseName=ats_wms_mahindra_electric_db;encrypt=true;trustServerCertificate=true
+      username: ats-india
+      password: "Ats123*"
+      driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+
   data:
-   redis:
-     host: localhost
-     port: 6379
-     timeout: 60000   # Optional: timeout in ms
- 
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 60000   # Optional: timeout in ms
+
 server:
   port: 8090
   servlet:
     connection-timeout: 60s
 
-
 plc:
   opc-ua:
     enabled: true
-    server-url: "opc.tcp://192.168.24.1/4840"
+    server-url: "opc.tcp://192.168.24.1:4840"   # corrected with colon before 4840
     security-policy: "None"
     username: ""
     password: ""
     connection-timeout: 5000
     max-reconnect-attempts: 3
     reconnect-delay: 5000
+
   tags:
     - name: "Tag1"
       identifier: "ns=0;i=2253"
@@ -50,6 +53,7 @@ plc:
     - name: "PLC"
       identifier: "ns=3;s=PLC"
       dataType: "Object"
+
   telegrams:
     - name: "ProductionData"
       identifier: "ns=2;s=Telegram_Production"
@@ -69,11 +73,11 @@ plc:
       length: 200
       format: "Binary"
       isArray: true
+
   writer:
     enabled: false
     interval: 5000
-    node-id: 'ns=3;s="Lumax WMS<>PLC"."STACKER_1_MISSION_PALLET_CODE"'
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    node-id: "ns=3;s=\"Lumax WMS<>PLC\".\"STACKER_1_MISSION_PALLET_CODE\""
 
 logging:
   level:
