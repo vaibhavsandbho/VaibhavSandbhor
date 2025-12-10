@@ -1,13 +1,14 @@
-
 [
-  "ns=3;s=\"Alarms\".\"Stacker_Alarms\"",
-  "ns=3;s=\"Alarms\".\"RB-32_Alarms\"",
-  "ns=3;s=\"Alarms\".\"RB-31_Alarms\"",
-  "ns=3;s=\"Alarms\".\"RB-22_Alarms\"",
-  "ns=3;s=\"Alarms\".\"RB-21_Alarms\"",
-  "ns=3;s=\"Alarms\".\"RB-12_Alarms\"",
-  "ns=3;s=\"Alarms\".\"RB-11_Alarms\"",
+  "ns=3;s=\"Alarms\".\"Gen_alarms\"",
+  "ns=3;s=\"Alarms\".\"RB-41_Alarms\"",
+  "ns=3;s=\"Alarms\".\"RB-42_Alarms\"",
+  "ns=3;s=\"Alarms\".\"TC-1_Alarms\"",
   "ns=3;s=\"Alarms\".\"TC-2_Alarms\"",
-  "ns=3;s=\"Alarms\".\"TC-1_Alarms\""
+  "ns=3;s=\"Alarms\".\"RB-11_Alarms\"",
+  "ns=3;s=\"Alarms\".\"RB-12_Alarms\"",
+  "ns=3;s=\"Alarms\".\"RB-21_Alarms\"",
+  "ns=3;s=\"Alarms\".\"RB-22_Alarms\"",
+  "ns=3;s=\"Alarms\".\"RB-31_Alarms\"",
+  "ns=3;s=\"Alarms\".\"RB-32_Alarms\"",
+  "ns=3;s=\"Alarms\".\"Stacker_Alarms\""
 ]
-

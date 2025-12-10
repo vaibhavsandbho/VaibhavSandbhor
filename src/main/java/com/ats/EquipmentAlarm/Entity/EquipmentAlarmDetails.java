@@ -21,7 +21,7 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 @Setter
 @ToString // Optional, for logging
 
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@JsonIgnoreProperties(ignoreUnknown = true)
 @Table(name = "master_equipment_alarm_details")
 public class EquipmentAlarmDetails {
 
@@ -57,6 +57,8 @@ public class EquipmentAlarmDetails {
     
     @Column(name = "bit_number")
     private int bitNo;
+    @Column(name="user_id")
+    private Integer userId;
 
     
 }

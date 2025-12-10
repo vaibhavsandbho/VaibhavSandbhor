@@ -1,1 +1,145 @@
-[{"equipmentId":1,"userId":1,"cdatetime":null,"equipmentName":"STACKER-1","equipmentDesc":"STACKER-1","userName":"Admin","equipmentIsActive":true,"equipmentIsDeleted":false,"equipmentCdatetime":null},{"equipmentId":2,"userId":1,"cdatetime":null,"equipmentName":"STACKER-2","equipmentDesc":"STACKER-2","userName":"Admin","equipmentIsActive":true,"equipmentIsDeleted":false,"equipmentCdatetime":null},{"equipmentId":3,"userId":1,"cdatetime":null,"equipmentName":"STACKER-3","equipmentDesc":"STACKER-3","userName":"Admin","equipmentIsActive":true,"equipmentIsDeleted":false,"equipmentCdatetime":null},{"equipmentId":4,"userId":1,"cdatetime":null,"equipmentName":"RB-11","equipmentDesc":"RB-11","userName":"Admin","equipmentIsActive":true,"equipmentIsDeleted":false,"equipmentCdatetime":null},{"equipmentId":5,"userId":1,"cdatetime":null,"equipmentName":"RB-12","equipmentDesc":"RB-12","userName":"Admin","equipmentIsActive":true,"equipmentIsDeleted":false,"equipmentCdatetime":null},{"equipmentId":10,"userId":1,"cdatetime":null,"equipmentName":"RB-41","equipmentDesc":"RB-41","userName":"Admin","equipmentIsActive":true,"equipmentIsDeleted":false,"equipmentCdatetime":null},{"equipmentId":11,"userId":1,"cdatetime":null,"equipmentName":"RB-42","equipmentDesc":"RB-42","userName":"Admin","equipmentIsActive":true,"equipmentIsDeleted":false,"equipmentCdatetime":null},{"equipmentId":12,"userId":1,"cdatetime":null,"equipmentName":"TC-1","equipmentDesc":"TC-1","userName":"Admin","equipmentIsActive":true,"equipmentIsDeleted":false,"equipmentCdatetime":null},{"equipmentId":13,"userId":1,"cdatetime":null,"equipmentName":"TC-2","equipmentDesc":"TC-2","userName":"Admin","equipmentIsActive":true,"equipmentIsDeleted":false,"equipmentCdatetime":null},{"equipmentId":6,"userId":1,"cdatetime":null,"equipmentName":"RB-21","equipmentDesc":"RB-21","userName":"Admin","equipmentIsActive":true,"equipmentIsDeleted":false,"equipmentCdatetime":null},{"equipmentId":7,"userId":1,"cdatetime":null,"equipmentName":"RB-22","equipmentDesc":"RB-22","userName":"Admin","equipmentIsActive":true,"equipmentIsDeleted":false,"equipmentCdatetime":null},{"equipmentId":8,"userId":1,"cdatetime":null,"equipmentName":"RB-31","equipmentDesc":"RB-31","userName":"Admin","equipmentIsActive":true,"equipmentIsDeleted":false,"equipmentCdatetime":null},{"equipmentId":9,"userId":1,"cdatetime":null,"equipmentName":"RB-32","equipmentDesc":"RB-32","userName":"Admin","equipmentIsActive":true,"equipmentIsDeleted":false,"equipmentCdatetime":null}]
+[
+    {
+        "equipmentId": 1,
+        "userId": 1,
+        "cdatetime": null,
+        "equipmentName": "STACKER-1",
+        "equipmentDesc": "STACKER-1",
+        "userName": "Admin",
+        "equipmentIsActive": true,
+        "equipmentIsDeleted": false,
+        "equipmentCdatetime": null
+    },
+    {
+        "equipmentId": 2,
+        "userId": 1,
+        "cdatetime": null,
+        "equipmentName": "STACKER-2",
+        "equipmentDesc": "STACKER-2",
+        "userName": "Admin",
+        "equipmentIsActive": true,
+        "equipmentIsDeleted": false,
+        "equipmentCdatetime": null
+    },
+    {
+        "equipmentId": 3,
+        "userId": 1,
+        "cdatetime": null,
+        "equipmentName": "STACKER-3",
+        "equipmentDesc": "STACKER-3",
+        "userName": "Admin",
+        "equipmentIsActive": true,
+        "equipmentIsDeleted": false,
+        "equipmentCdatetime": null
+    },
+    {
+        "equipmentId": 4,
+        "userId": 1,
+        "cdatetime": null,
+        "equipmentName": "RB-11",
+        "equipmentDesc": "RB-11",
+        "userName": "Admin",
+        "equipmentIsActive": true,
+        "equipmentIsDeleted": false,
+        "equipmentCdatetime": null
+    },
+    {
+        "equipmentId": 5,
+        "userId": 1,
+        "cdatetime": null,
+        "equipmentName": "RB-12",
+        "equipmentDesc": "RB-12",
+        "userName": "Admin",
+        "equipmentIsActive": true,
+        "equipmentIsDeleted": false,
+        "equipmentCdatetime": null
+    },
+    {
+        "equipmentId": 10,
+        "userId": 1,
+        "cdatetime": null,
+        "equipmentName": "RB-41",
+        "equipmentDesc": "RB-41",
+        "userName": "Admin",
+        "equipmentIsActive": true,
+        "equipmentIsDeleted": false,
+        "equipmentCdatetime": null
+    },
+    {
+        "equipmentId": 11,
+        "userId": 1,
+        "cdatetime": null,
+        "equipmentName": "RB-42",
+        "equipmentDesc": "RB-42",
+        "userName": "Admin",
+        "equipmentIsActive": true,
+        "equipmentIsDeleted": false,
+        "equipmentCdatetime": null
+    },
+    {
+        "equipmentId": 12,
+        "userId": 1,
+        "cdatetime": null,
+        "equipmentName": "TC-1",
+        "equipmentDesc": "TC-1",
+        "userName": "Admin",
+        "equipmentIsActive": true,
+        "equipmentIsDeleted": false,
+        "equipmentCdatetime": null
+    },
+    {
+        "equipmentId": 13,
+        "userId": 1,
+        "cdatetime": null,
+        "equipmentName": "TC-2",
+        "equipmentDesc": "TC-2",
+        "userName": "Admin",
+        "equipmentIsActive": true,
+        "equipmentIsDeleted": false,
+        "equipmentCdatetime": null
+    },
+    {
+        "equipmentId": 6,
+        "userId": 1,
+        "cdatetime": null,
+        "equipmentName": "RB-21",
+        "equipmentDesc": "RB-21",
+        "userName": "Admin",
+        "equipmentIsActive": true,
+        "equipmentIsDeleted": false,
+        "equipmentCdatetime": null
+    },
+    {
+        "equipmentId": 7,
+        "userId": 1,
+        "cdatetime": null,
+        "equipmentName": "RB-22",
+        "equipmentDesc": "RB-22",
+        "userName": "Admin",
+        "equipmentIsActive": true,
+        "equipmentIsDeleted": false,
+        "equipmentCdatetime": null
+    },
+    {
+        "equipmentId": 8,
+        "userId": 1,
+        "cdatetime": null,
+        "equipmentName": "RB-31",
+        "equipmentDesc": "RB-31",
+        "userName": "Admin",
+        "equipmentIsActive": true,
+        "equipmentIsDeleted": false,
+        "equipmentCdatetime": null
+    },
+    {
+        "equipmentId": 9,
+        "userId": 1,
+        "cdatetime": null,
+        "equipmentName": "RB-32",
+        "equipmentDesc": "RB-32",
+        "userName": "Admin",
+        "equipmentIsActive": true,
+        "equipmentIsDeleted": false,
+        "equipmentCdatetime": null
+    }
+]

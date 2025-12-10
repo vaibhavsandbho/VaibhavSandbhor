@@ -7,7 +7,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Data;
 
-@Table(name = "active_equipment_alarms", schema = "public")
+@Table(name = "active_equipment_alarms_view", schema = "public")
 @Entity
 @Data
 public class ActiveequipmentalarmsviewEntity {

@@ -18,11 +18,10 @@ spring:
 plc:
   opc-ua:
     enabled: true
-    server-url: "opc.tcp://10.10.56.131:4840"   # corrected with colon before 4840
-    security-policy: "Basic256Sha256"
-    security-mode: "SignAndEncrypt"
-    username: "user1"
-    password: "AtsWms123*"
+    server-url: "opc.tcp://10.10.56.131/4840"
+    security-policy: "None"
+    username: ""
+    password: ""
     connection-timeout: 5000
     max-reconnect-attempts: 3
     reconnect-delay: 5000

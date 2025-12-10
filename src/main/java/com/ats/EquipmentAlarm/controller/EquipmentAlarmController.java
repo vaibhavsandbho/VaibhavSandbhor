@@ -11,6 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.function.Function;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -116,21 +117,7 @@ public class EquipmentAlarmController {
         thread.setDaemon(true); // Optional: stops when app stops
         thread.start();
     }
- 
-
-
-    /**
-     * Reads all predefined OPC-UA node values every cycle and processes them to detect alarm conditions.
-     * 
-     * - If a Boolean node value changes from false to true (i.e., becomes active), it saves a corresponding alarm to the database.
-     * - If a Boolean node value changes from true to false (i.e., gets cleared), it updates the alarm status in the database and the in-memory state.
-     * 
-     * This method uses an in-memory cache (alarmStates) to avoid repeated database writes and reduce load.
-     * @throws IOException 
-     * @throws DatabindException 
-     * @throws StreamReadException 
-     */
-    public void readAndProcessWordAlarmsFromWordTags() throws StreamReadException, DatabindException, IOException {
+  public void readAndProcessWordAlarmsFromWordTags() throws StreamReadException, DatabindException, IOException {
         log.info("Starting alarm processing from word tags");
 
         // Load and prepare mappings
@@ -208,6 +195,8 @@ public class EquipmentAlarmController {
     	log.trace("Starting node processing for: {}", nodeId);
 
         Optional<DataValue> alarmWordOpt = opcUaService.readValue(nodeId);
+        
+   
         if (!alarmWordOpt.isPresent()) {
             log.trace("No value for node: {}", nodeId);
             return;
@@ -216,6 +205,8 @@ public class EquipmentAlarmController {
 
         Object alarmWordObj = alarmWordOpt.get().getValue().getValue();
         String normalizedNodeId = nodeId.replace("\"", "");
+        
+      
 
         if (alarmWordObj instanceof Boolean) {
         	
@@ -240,13 +231,26 @@ public class EquipmentAlarmController {
                                      Queue<EquipmentAlarmHistoryEntity> alarmsToUpdate) {
     	
     	log.debug("Processing boolean alarm for node: {}", normalizedNodeId);
-
-        String alarmKey = normalizedNodeId + "_0";
+    	
+         String normalizedNodeId1 = normalizedNodeId.replace("\"", "");
+         
+         String baseTag = extractTagBase(normalizedNodeId1);
+         
+        String alarmKey = baseTag + "_0";
         String redisKey = getRedisKey(alarmKey);
-
-        EquipmentAlarmDetails alarmDetail = alarmDetailsMap.get(alarmKey);
     
-      
+       
+        EquipmentAlarmDetails alarmDetail = alarmDetailsMap.get(alarmKey);
+        System.out.println("alarmKey"+alarmKey);
+        System.out.println("alarmDetail"+alarmDetail);
+//    
+//        for (Entry<String, EquipmentAlarmDetails> entry : alarmDetailsMap.entrySet()) {
+//            String key = entry.getKey();
+//            
+//            if (key.contains(".ST1 ALARMS")) {
+//                System.out.println("Matched Key = " + key);
+//            }
+//        }
         
      
         if (alarmDetail == null) {   log.trace("No alarm detail found for key: {}", alarmKey);return;}
@@ -266,47 +270,54 @@ public class EquipmentAlarmController {
         Object body = extObj.getBody();
         
         
-        if (body instanceof Structure) {
-        	
-        	
-        	
-            Structure struct = (Structure) body;
-
-            // Example: "{Alarm_0=true, Alarm_1=false, ...}"
-            String structString = struct.toString();
-            String cleaned = structString.replaceAll("[{}]", "");
-            String[] parts = cleaned.split(",");
-
-            for (int i = 0; i < parts.length; i++) {
-                String[] kv = parts[i].trim().split("=");
-
-                if (kv.length == 2) {
-                    boolean active = Boolean.parseBoolean(kv[1].trim());
-
-                    String alarmKey = normalizedNodeId + "_" + i;
-                    String redisKey = getRedisKey(alarmKey);
-
-                    EquipmentAlarmDetails alarmDetail = alarmDetailsMap.get(alarmKey);
-
-                    System.out.println("alarmKey: " + alarmKey);
-                    System.out.println("EquipmentAlarmDetails: " + alarmDetail);
-
-                    if (alarmDetail == null) {
-                        log.trace("No alarm detail found for boolean struct key: {}", alarmKey);
-                        continue;
-                    }
-
-                    MasterEquipmentDetailsEntity equipment = equipmentMap.get(alarmDetail.getEquipmentId());
-                    if (equipment == null) {
-                        log.trace("No equipment detail found for struct key: {}", alarmKey);
-                        continue;
-                    }
-
-                    handleAlarmChange(alarmDetail, equipment, active, redisKey,
-                                      alarmsToInsert, alarmsToUpdate);
-                }
-            }
-        }
+//        if (body instanceof Structure) {
+//        	
+//        	
+//        	
+//            Structure struct = (Structure) body;
+//
+//            // Example: "{Alarm_0=true, Alarm_1=false, ...}"
+//            String structString = struct.toString();
+//            String cleaned = structString.replaceAll("[{}]", "");
+//            String[] parts = cleaned.split(",");
+//
+//            for (int i = 0; i < parts.length; i++) {
+//                String[] kv = parts[i].trim().split("=");
+//
+//                if (kv.length == 2) {
+//                    boolean active = Boolean.parseBoolean(kv[1].trim());
+//
+//                    String alarmKey = normalizedNodeId + "_" + i;
+//                    String redisKey = getRedisKey(alarmKey);
+//
+//                    EquipmentAlarmDetails alarmDetail = alarmDetailsMap.get(alarmKey);
+//                    for (Entry<String, EquipmentAlarmDetails> entry : alarmDetailsMap.entrySet()) {
+//                      String key = entry.getKey();
+//                      
+//                      if (key.contains(".RB-42_Alarms")) {
+//                          System.out.println("Matched Key = " + key);
+//                      }
+//                  } 
+//
+////                    System.out.println("in struct alarmKey: " + alarmKey);
+//                    System.out.println("EquipmentAlarmDetails: " + alarmDetail);
+//
+//                    if (alarmDetail == null) {
+//                        log.trace("No alarm detail found for boolean struct key: {}", alarmKey);
+//                        continue;
+//                    }
+//
+//                    MasterEquipmentDetailsEntity equipment = equipmentMap.get(alarmDetail.getEquipmentId());
+//                    if (equipment == null) {
+//                        log.trace("No equipment detail found for struct key: {}", alarmKey);
+//                        continue;
+//                    }
+//
+//                    handleAlarmChange(alarmDetail, equipment, active, redisKey,
+//                                      alarmsToInsert, alarmsToUpdate);
+//                }
+//            }
+//        }
 
         byte[] bytes = ((ByteString) body).bytes();
        
@@ -318,10 +329,12 @@ public class EquipmentAlarmController {
             String redisKey = getRedisKey(alarmKey);
            
             EquipmentAlarmDetails alarmDetail = alarmDetailsMap.get(alarmKey);
-            
-            
-            
-        
+           
+         
+//       EquipmentAlarmDetails alarmDetail = alarmDetailsMap.get(alarmKey);
+         
+
+//        
             if (alarmDetail == null){    
             log.trace("No alarm detail found for boolean array key: {}", alarmKey);
             continue;
@@ -353,7 +366,8 @@ public class EquipmentAlarmController {
 
   EquipmentAlarmDetails alarmDetail = alarmDetailsMap.get(alarmKey);
  
-
+  System.out.println("in booleaar alarm array alarmKey: " + alarmKey);
+  System.out.println("EquipmentAlarmDetails: " + alarmDetail);
 if (alarmDetail == null) {  log.trace("No alarm detail found for boolean array key: {}", alarmKey); continue;}
 
 

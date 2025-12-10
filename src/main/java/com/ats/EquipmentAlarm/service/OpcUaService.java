@@ -19,6 +19,7 @@ import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UInteger;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.MessageSecurityMode;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.MonitoringMode;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.TimestampsToReturn;
+import org.eclipse.milo.opcua.stack.core.types.enumerated.UserTokenType;
 import org.eclipse.milo.opcua.stack.core.types.structured.*;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -116,39 +117,23 @@ public class OpcUaService {
         }
     }
 
-
     private void connect() throws Exception {
-        System.out.println("Starting OPC UA connection...");
-
         SecurityPolicy securityPolicy = SecurityPolicy.valueOf(plcConfig.getOpcUa().getSecurityPolicy());
-        MessageSecurityMode securityMode = MessageSecurityMode.valueOf(plcConfig.getOpcUa().getSecurityMode());
-
-        System.out.println("SecurityPolicy: " + securityPolicy + ", SecurityMode: " + securityMode);
-
-        Path securityDir = Paths.get("security");
-        Files.createDirectories(securityDir);
-
-        // Load or create the client certificate
-        KeyStoreLoader loader = new KeyStoreLoader().load(securityDir);
-        System.out.println("Client certificate loaded. ApplicationUri: " + loader.getApplicationUri());
-
-        // Build OPC UA client
+        
         client = OpcUaClient.create(
-            plcConfig.getOpcUa().getServerUrl(),
-            endpoints -> endpoints.stream()
-                .filter(e -> e.getSecurityPolicyUri().equals(securityPolicy.getUri()))
-                .filter(e -> e.getSecurityMode().equals(securityMode))
-                .findFirst(),
-            configBuilder -> configBuilder
-                .setApplicationName(LocalizedText.english("PLC Integration Client"))
-                .setApplicationUri(loader.getApplicationUri())  // MUST match certificate
-                .setKeyPair(loader.getClientKeyPair())
-                .setCertificate(loader.getClientCertificate())
-                .setCertificateChain(loader.getClientCertificateChain())
-                .setRequestTimeout(UInteger.valueOf(plcConfig.getOpcUa().getConnectionTimeout()))
-                .setIdentityProvider(createIdentityProvider())
-                .build()
-        );
+        	    plcConfig.getOpcUa().getServerUrl(),
+        	    endpoints -> endpoints.stream()
+        	        .filter(e -> e.getSecurityPolicyUri().equals(securityPolicy.getUri()))
+        	        .filter(e -> Arrays.stream(e.getUserIdentityTokens())
+        	            .anyMatch(t -> t.getTokenType() == UserTokenType.Anonymous))
+        	        .findFirst(),
+        	    configBuilder -> configBuilder
+        	        .setApplicationName(LocalizedText.english("PLC Integration Client"))
+        	        .setApplicationUri("urn:plc:client")
+        	        .setRequestTimeout(UInteger.valueOf(plcConfig.getOpcUa().getConnectionTimeout()))
+        	        .setIdentityProvider(AnonymousProvider.INSTANCE)
+        	        .build()
+        	);
 
         connectWithRetry();
     }
@@ -469,7 +454,7 @@ public class OpcUaService {
     }
     
  
-   
+   @PostConstruct
     public void saveDataFormDb() {
         try {
             List<EquipmentAlarmDetails> list = equipmentAlarmDetailsRepo.findAll();
@@ -489,7 +474,7 @@ public class OpcUaService {
         }
     }
     
-   
+  
     public void saveEquipmentDetails() throws StreamWriteException, DatabindException, IOException
     {
     	List<MasterEquipmentDetailsEntity> list = masterEquipmentRepo.findAll();
