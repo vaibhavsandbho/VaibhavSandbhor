@@ -2,7 +2,7 @@ package com.ats.EquipmentAlarm.Entity;
 
 import java.time.LocalDateTime;
 
-import jakarta.persistence.*;
+import javax.persistence.*;
 import lombok.Data;
 @Entity
 @Table(name = "equipment_alarm_history", schema = "public")

@@ -1,6 +1,6 @@
 package com.ats.EquipmentAlarm.Entity;
 
-import jakarta.persistence.*;
+import javax.persistence.*;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;

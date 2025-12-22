@@ -48,7 +48,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import jakarta.annotation.PostConstruct;
+import javax.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -210,14 +210,14 @@ public class EquipmentAlarmController {
 
         if (alarmWordObj instanceof Boolean) {
         	
-        	System.out.println("#0.1");
+      
             processBooleanAlarm(normalizedNodeId, (Boolean) alarmWordObj, alarmDetailsMap, equipmentMap, alarmsToInsert, alarmsToUpdate);
         } else if (alarmWordObj instanceof ExtensionObject) {
-        	System.out.println("#0.2");
+        
             processWordAlarm(normalizedNodeId, (ExtensionObject) alarmWordObj, alarmDetailsMap, equipmentMap, alarmsToInsert, alarmsToUpdate);
         }
         else if (alarmWordObj instanceof Boolean[]) {
-        	System.out.println("#0.3");
+        	
             processWordAlarmBooleanArray(normalizedNodeId, (Boolean[]) alarmWordObj, alarmDetailsMap, equipmentMap, alarmsToInsert, alarmsToUpdate);
         }else {
             log.trace("Unsupported data type for node: {}", nodeId);
@@ -241,9 +241,7 @@ public class EquipmentAlarmController {
     
        
         EquipmentAlarmDetails alarmDetail = alarmDetailsMap.get(alarmKey);
-        System.out.println("alarmKey"+alarmKey);
-        System.out.println("alarmDetail"+alarmDetail);
-//    
+
 //        for (Entry<String, EquipmentAlarmDetails> entry : alarmDetailsMap.entrySet()) {
 //            String key = entry.getKey();
 //            
