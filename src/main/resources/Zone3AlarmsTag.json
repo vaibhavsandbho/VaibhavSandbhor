@@ -1,6 +1,5 @@
 [
   "ns=3;s=\"Alarm_DB\".\"Communication_Fault\"",
-  "ns=3;s=\"Alarm_DB\".\"EMG Comm Fault\"",
-  "ns=3;s=\"Alarm_DB\".\"BCR Comm Fault\"",
-  "ns=3;s=\"Alarm_DB\".\"Load Cell Comm Fault\""
+"ns=3;s=\"WMS TO PLC\".\"ST1_PICKUP_STATION_DUPLICATE_PALLET_CODE\"",
+"ns=3;s=\"WMS TO PLC\".\"ST2_PICKUP_STATION_DUPLICATE_PALLET_CODE\""
 ]

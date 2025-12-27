@@ -247,7 +247,7 @@ public class EquipmentAlarmController {
         EquipmentAlarmDetails alarmDetail = alarmDetailsMap.get(alarmKey);
     
       
-        
+
      
         if (alarmDetail == null) {   log.trace("No alarm detail found for key: {}", alarmKey);return;}
 
@@ -288,8 +288,7 @@ public class EquipmentAlarmController {
 
                     EquipmentAlarmDetails alarmDetail = alarmDetailsMap.get(alarmKey);
 
-                    System.out.println("alarmKey: " + alarmKey);
-                    System.out.println("EquipmentAlarmDetails: " + alarmDetail);
+                   
 
                     if (alarmDetail == null) {
                         log.trace("No alarm detail found for boolean struct key: {}", alarmKey);
@@ -373,12 +372,10 @@ handleAlarmChange(alarmDetail, equipment, active, redisKey, alarmsToInsert, alar
         boolean wasActive = Boolean.parseBoolean(redisTemplate.opsForValue().get(redisKey));
         String now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         
-        EquipmentAlarmHistoryEntity history =
-              equipmentHistoryrepo.findByEquipmentAlarmIdAndEquipmentAlarmStatusTrue(detail.getEquipmentAlarmId());
+     
 //        
         
         System.out.println("102");
-
         if (isActive && !wasActive) {
         	System.out.println("103");
             EquipmentAlarmHistoryEntity newAlarm = createHistoryEntity(detail, equipment, now);
@@ -387,7 +384,8 @@ handleAlarmChange(alarmDetail, equipment, active, redisKey, alarmsToInsert, alar
             log.info("NEW ALARM TRIGGERED - Equipment: {}, Alarm: {}, Time: {}", 
                     equipment.getEquipmentName(), detail.getEquipmentAlarmName(), now);
         } else if (!isActive && wasActive) {
-           
+        	   EquipmentAlarmHistoryEntity history =
+        	              equipmentHistoryrepo.findByEquipmentAlarmIdAndEquipmentAlarmStatusTrue(detail.getEquipmentAlarmId());
             if (history != null) {
                 history.setAlarmResolvedDatetime(now);
                 history.setEquipmentAlarmStatus(false);

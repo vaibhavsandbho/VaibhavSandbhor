@@ -1,3 +1,4 @@
+
 spring:
   application:
     name: EquipmentAlarm
@@ -10,7 +11,7 @@ spring:
 
   datasource:
     alarm:
-      url: jdbc:postgresql://localhost:5432/ats_mahindra_cell_db
+      url: jdbc:postgresql://localhost:5432/ats_mahindra_db
       username: postgres
       password: root
       driver-class-name: org.postgresql.Driver
@@ -35,7 +36,7 @@ server:
 plc:
   opc-ua:
     enabled: true
-    server-url: "opc.tcp://192.168.24.1:4840"   # corrected with colon before 4840
+    server-url: "opc.tcp://192.168.28.1:4840"   # corrected with colon before 4840
     security-policy: "None"
     username: ""
     password: ""

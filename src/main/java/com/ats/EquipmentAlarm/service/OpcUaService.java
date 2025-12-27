@@ -411,8 +411,8 @@ public class OpcUaService {
         }
     }
     
-    @PostConstruct
-
+  
+   
     public void saveDataFormDb() {
         try {
             List<EquipmentAlarmDetails> list = equipmentAlarmDetailsRepo.findAll();
@@ -428,7 +428,7 @@ public class OpcUaService {
             e.printStackTrace();
         }
     }
-   
+    @PostConstruct
     public void saveEquipmentDetails() throws StreamWriteException, DatabindException, IOException
     {
     	 
