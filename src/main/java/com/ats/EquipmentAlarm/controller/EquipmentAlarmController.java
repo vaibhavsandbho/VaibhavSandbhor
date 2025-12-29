@@ -219,14 +219,14 @@ public class EquipmentAlarmController {
 
         if (alarmWordObj instanceof Boolean) {
         	
-        	System.out.println("#0.1");
+        	
             processBooleanAlarm(normalizedNodeId, (Boolean) alarmWordObj, alarmDetailsMap, equipmentMap, alarmsToInsert, alarmsToUpdate);
         } else if (alarmWordObj instanceof ExtensionObject) {
-        	System.out.println("#0.2");
+        	
             processWordAlarm(normalizedNodeId, (ExtensionObject) alarmWordObj, alarmDetailsMap, equipmentMap, alarmsToInsert, alarmsToUpdate);
         }
         else if (alarmWordObj instanceof Boolean[]) {
-        	System.out.println("#0.3");
+        
             processWordAlarmBooleanArray(normalizedNodeId, (Boolean[]) alarmWordObj, alarmDetailsMap, equipmentMap, alarmsToInsert, alarmsToUpdate);
         }else {
             log.trace("Unsupported data type for node: {}", nodeId);
@@ -375,9 +375,9 @@ handleAlarmChange(alarmDetail, equipment, active, redisKey, alarmsToInsert, alar
      
 //        
         
-        System.out.println("102");
+       
         if (isActive && !wasActive) {
-        	System.out.println("103");
+        	
             EquipmentAlarmHistoryEntity newAlarm = createHistoryEntity(detail, equipment, now);
             redisTemplate.opsForValue().set(redisKey, "true");
             alarmsToInsert.add(newAlarm);

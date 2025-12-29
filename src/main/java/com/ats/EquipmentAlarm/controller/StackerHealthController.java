@@ -57,8 +57,8 @@ public class StackerHealthController {
                 // Define node IDs for each stacker
                 Map<String, String> stackerNodes = Map.of(
                         "STKR1", "ns=3;s=\"0.PLC_TO_WMS\".\"STKR1_Control mode\"",
-                        "STKR2", "ns=3;s=\"0.PLC_TO_WMS\".\"STKR2_Control mode\"",
-                        "STKR3", "ns=3;s=\"0.PLC_TO_WMS\".\"STKR3_Control mode\""
+                        "STKR2", "ns=3;s=\"0.PLC_TO_WMS\".\"STKR2_Control mode\""
+//                        "STKR3", "ns=3;s=\"0.PLC_TO_WMS\".\"STKR3_Control mode\""
                 );
 
                 // Loop over each stacker and read its control mode
@@ -83,7 +83,7 @@ public class StackerHealthController {
                         logs.add(String.format("%s → Control Mode: %s (%d)", stackerName, modeLabel, controlMode));
 
                         // If control mode = 2 (Semiauto), fetch mission data
-                        if (controlMode == 2) {
+                        if (controlMode == 2 ||controlMode ==1) {
                             List<OutfeedMissionRuntimeDetailsEntity> outfeedList =
                                     outfeedMissionRuntimeDetailsRepoInstance.findByoutfeedMissionStatus();
 
