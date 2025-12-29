@@ -31,7 +31,8 @@ import com.ats.EquipmentAlarm.service.MasterPositionService;
 @CrossOrigin("*")
 public class AlarmSseController {
 
-    
+	@Autowired
+	private StackerService stackerService;
 
 
 	@Autowired
@@ -82,6 +83,8 @@ public class AlarmSseController {
 	                data.put("resolvedlist", resolvedList);
 	                data.put("lockpositoncount", lockpositoncount);
 	                data.put("misMatchCount", misMatchCount);
+	                // ✅ stacker name + control mode
+	                data.put("stackerModes", stackerService.getStackerModes());
 	             
 	                try {
 	                    sseEmitter.send(SseEmitter.event().name("alarm-update").data(data));

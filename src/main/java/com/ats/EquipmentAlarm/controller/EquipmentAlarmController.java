@@ -2,6 +2,7 @@ package com.ats.EquipmentAlarm.controller;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Duration;
@@ -476,32 +477,47 @@ handleAlarmChange(alarmDetail, equipment, active, redisKey, alarmsToInsert, alar
         }
         return normalizedTag;
     }
- // Loads alarm detail definitions from JSON file (used to map nodeId to alarm metadata)
-   
-    private List<EquipmentAlarmDetails> loadAlarmDetailsFromJson()
-            throws StreamReadException, DatabindException, IOException {
-        try (InputStream is = getClass().getClassLoader().getResourceAsStream("EquipmentAlarmDetails.json")) {
-            if (is == null) {
-                log.error("EquipmentAlarmDetails.json resource not found!");
-                return Collections.emptyList();
-            }
+ //  // Loads alarm detail definitions from JSON file (used to map nodeId to alarm metadata)
+    private List<EquipmentAlarmDetails> loadAlarmDetailsFromJson() throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
 
-            ObjectMapper mapper = new ObjectMapper();
+        // First check external data folder
+       // String externalPath = System.getProperty("user.dir") + "/data/EquipmentAlarmDetails.json";
+        
+        String basePath = new File(System.getProperty("user.dir")).getAbsolutePath();
+        File externalFile = new File(basePath,"/data/EquipmentAlarmDetails.json");
+
+//        if (externalFile.exists()) {
+//            try (InputStream is = new FileInputStream(externalFile)) {
+//                return mapper.readValue(is, new TypeReference<List<EquipmentAlarmDetails>>() {});
+//            }
+//        }
+
+        // Fallback: load from classpath resource
+        Resource resource = resourceLoader.getResource("classpath:EquipmentAlarmDetails.json");
+        try (InputStream is = resource.getInputStream()) {
             return mapper.readValue(is, new TypeReference<List<EquipmentAlarmDetails>>() {});
         }
     }
 
-    
-    // Loads master equipment definitions from JSON file (used to enrich alarm data)
-    private List<MasterEquipmentDetailsEntity> loadEquipmentDetailsFromJson() throws StreamReadException, DatabindException, IOException {
-    	try (InputStream is = getClass().getClassLoader().getResourceAsStream("EquipmentDeatails.json")) {
-	        if (is == null) {
-	            log.error("EquipmentAlarmDetails.json resource not found!");
-	            return Collections.emptyList();
-	        }
-	        return new ObjectMapper().readValue(is, new TypeReference<List<MasterEquipmentDetailsEntity>>() {});
-}
+    private List<MasterEquipmentDetailsEntity> loadEquipmentDetailsFromJson() throws IOException {
+
+        ObjectMapper mapper = new ObjectMapper();
+
+        Resource resource = resourceLoader.getResource("classpath:EquipmentDetails.json");
+
+        if (!resource.exists()) {
+            throw new FileNotFoundException("EquipmentDetails.json not found in classpath");
+        }
+
+        try (InputStream is = resource.getInputStream()) {
+            return mapper.readValue(
+                is,
+                new TypeReference<List<MasterEquipmentDetailsEntity>>() {}
+            );
+        }
     }
+
 }
 //    private String extractTagBase(String tag) {
 //        if (tag == null || tag.isEmpty()) return tag;

@@ -428,7 +428,7 @@ public class OpcUaService {
             e.printStackTrace();
         }
     }
-    @PostConstruct
+  
     public void saveEquipmentDetails() throws StreamWriteException, DatabindException, IOException
     {
     	 
@@ -436,7 +436,7 @@ public class OpcUaService {
     	    
     	    ObjectMapper mapper = new ObjectMapper();
     	    
-    	    String filePath=System.getProperty("user.dir")+"/src/main/resources/EquipmentDeatails.json";
+    	    String filePath=System.getProperty("user.dir")+"/src/main/resources/EquipmentDetails.json";
     	    
     	    File file=new File(filePath);
     	    
