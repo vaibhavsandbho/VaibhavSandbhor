@@ -35,7 +35,8 @@ public class MasterPositionDto {
 
 	private int emptyPalletPosition;
 	private int positionIsActive;
-private int isDataMismatch;
+
+
 
 }
 

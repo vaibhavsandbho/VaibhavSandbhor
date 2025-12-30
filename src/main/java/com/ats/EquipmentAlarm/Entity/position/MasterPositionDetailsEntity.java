@@ -70,7 +70,7 @@ public class MasterPositionDetailsEntity {
 	@Column(name = "IS_MANUAL_DISPATCH")
 	private int isManualDispatch;
 	
-	@Column(name="IS_DATA_MISMATCH")
-	private int isDataMismatch;
+//	@Column(name="IS_DATA_MISMATCH")
+//	private int isDataMismatch;
 
 }

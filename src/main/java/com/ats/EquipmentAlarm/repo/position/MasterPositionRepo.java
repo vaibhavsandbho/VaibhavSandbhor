@@ -18,15 +18,15 @@ public interface MasterPositionRepo extends JpaRepository<MasterPositionDetailsE
 
 	
 	@Query("SELECT new com.ats.EquipmentAlarm.Entity.position.MasterPositionDto(" +
-		       "f.positionId, f.rackId, f.areaId, f.floorId, f.positionName, f.emptyPalletPosition, f.positionIsActive, f.isDataMismatch) " +
+		       "f.positionId, f.rackId, f.areaId, f.floorId, f.positionName, f.emptyPalletPosition, f.positionIsActive) " +
 		       "FROM MasterPositionDetailsEntity f " +
 		       "WHERE f.positionIsActive = 0")
 	public	List<MasterPositionDto> findLockPosition();
 	
 	@Query("SELECT new com.ats.EquipmentAlarm.Entity.position.MasterPositionDto(" +
-		       "f.positionId, f.rackId, f.areaId, f.floorId, f.positionName, f.emptyPalletPosition, f.positionIsActive, f.isDataMismatch) " +
+		       "f.positionId, f.rackId, f.areaId, f.floorId, f.positionName, f.emptyPalletPosition, f.positionIsActive) " +
 		       "FROM MasterPositionDetailsEntity f " +
-		       "WHERE f.isDataMismatch = 1")
+		       "WHERE f.positionIsAllocated = 2")
 	public	List<MasterPositionDto> findMismatchPosition();
 	
 	
@@ -34,7 +34,7 @@ public interface MasterPositionRepo extends JpaRepository<MasterPositionDetailsE
 	public	Integer findCountLockPosition();
 	
 	
-	@Query("SELECT COUNT(m) FROM MasterPositionDetailsEntity m WHERE m.isDataMismatch=1 ")
+	@Query("SELECT COUNT(m) FROM MasterPositionDetailsEntity m WHERE m.positionIsAllocated=2 ")
 	int findMismatchPositionCount();
 	
 }
