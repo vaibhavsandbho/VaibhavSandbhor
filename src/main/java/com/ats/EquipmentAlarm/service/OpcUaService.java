@@ -411,7 +411,7 @@ public class OpcUaService {
         }
     }
     
-    @PostConstruct
+   @PostConstruct
 
     public void saveDataFormDb() {
         try {
