@@ -410,8 +410,7 @@ public class OpcUaService {
             return results;
         }
     }
-    
-   @PostConstruct
+   
 
     public void saveDataFormDb() {
         try {

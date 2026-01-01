@@ -31,13 +31,15 @@ import com.ats.EquipmentAlarm.service.MasterPositionService;
 @CrossOrigin("*")
 public class AlarmSseController {
 
-    
+	@Autowired
+	private StackerService stackerService;
 
 
 	@Autowired
 	private CacheAlarmService euipmentAlarmService;
 	@Autowired
 	MasterPositionService masterPositionService;
+
 
 
    
@@ -73,13 +75,17 @@ public class AlarmSseController {
 	                
 	                       Integer lockpositoncount= masterPositionService.getLockPositionCount();
 	                       Integer misMatchCount=masterPositionService.getMismatchPositioncount();
+	                       
+//	                       ResponseEntity<?> r=stackerhealth.readMultipleStackerModes();
 
 	                Map<String, Object> data = new HashMap<>();
 	                data.put("activelist", activeList);
 	                data.put("resolvedlist", resolvedList);
 	                data.put("lockpositoncount", lockpositoncount);
 	                data.put("misMatchCount", misMatchCount);
-
+	                // ✅ stacker name + control mode
+	                data.put("stackerModes", stackerService.getStackerModes());
+	             
 	                try {
 	                    sseEmitter.send(SseEmitter.event().name("alarm-update").data(data));
 	                } catch (IOException e) {

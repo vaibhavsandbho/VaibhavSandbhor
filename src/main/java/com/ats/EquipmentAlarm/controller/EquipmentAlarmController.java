@@ -104,7 +104,7 @@ public class EquipmentAlarmController {
             while (running) {
                 try {
                 	readAndProcessWordAlarmsFromWordTags();
-                    Thread.sleep(1000); // Run every 1 second
+                    Thread.sleep(15000); // Run every 15 second
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                     break;
@@ -480,25 +480,33 @@ handleAlarmChange(alarmDetail, equipment, active, redisKey, alarmsToInsert, alar
  //  // Loads alarm detail definitions from JSON file (used to map nodeId to alarm metadata)
     private List<EquipmentAlarmDetails> loadAlarmDetailsFromJson() throws IOException {
         ObjectMapper mapper = new ObjectMapper();
+        Resource resource = resourceLoader.getResource("classpath:EquipmentAlarmDetails.json");
 
+
+        if (!resource.exists()) {
+
+            throw new FileNotFoundException("EquipmentAlarmDetails.json not found in classpath");
+        }
+
+        try (InputStream is = resource.getInputStream()) {
+            return mapper.readValue(
+                is,
+                new TypeReference<List<EquipmentAlarmDetails>>() {}
+            );
+        }
+    }
         // First check external data folder
        // String externalPath = System.getProperty("user.dir") + "/data/EquipmentAlarmDetails.json";
         
-        String basePath = new File(System.getProperty("user.dir")).getAbsolutePath();
-        File externalFile = new File(basePath,"/data/EquipmentAlarmDetails.json");
+//        String basePath = new File(System.getProperty("user.dir")).getAbsolutePath();
+//        File externalFile = new File(basePath,"/data/EquipmentAlarmDetails.json");
 
 //        if (externalFile.exists()) {
 //            try (InputStream is = new FileInputStream(externalFile)) {
 //                return mapper.readValue(is, new TypeReference<List<EquipmentAlarmDetails>>() {});
 //            }
 //        }
-
-        // Fallback: load from classpath resource
-        Resource resource = resourceLoader.getResource("classpath:EquipmentAlarmDetails.json");
-        try (InputStream is = resource.getInputStream()) {
-            return mapper.readValue(is, new TypeReference<List<EquipmentAlarmDetails>>() {});
-        }
-    }
+ 
 
     private List<MasterEquipmentDetailsEntity> loadEquipmentDetailsFromJson() throws IOException {
 
