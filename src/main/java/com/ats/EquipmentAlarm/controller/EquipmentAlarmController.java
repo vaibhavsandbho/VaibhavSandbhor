@@ -104,7 +104,7 @@ public class EquipmentAlarmController {
             while (running) {
                 try {
                 	readAndProcessWordAlarmsFromWordTags();
-                    Thread.sleep(1000); // Run every 1 second
+                    Thread.sleep(10000); // Run every 10 second
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                     break;

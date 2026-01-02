@@ -71,7 +71,7 @@ public class OpcUaService {
         if (plcConfig.getOpcUa().isEnabled()) {
             try {
                 connect();
-                subscribeToData();
+               
             } catch (Exception e) {
                 log.error("Failed to initialize OPC UA connection", e);
             }
@@ -127,86 +127,11 @@ public class OpcUaService {
         throw new RuntimeException("Failed to connect after " + attempts + " attempts");
     }
 
-    private void subscribeToData() {
-        try {
-            double publishingInterval = 100.0;
-            List<ReadValueId> readValueIds = new ArrayList<>();
-            
-            // Add tags to subscription
-            if (plcConfig.getOpcUa().getTags() != null) {
-                plcConfig.getOpcUa().getTags().forEach(tag -> 
-                    readValueIds.add(new ReadValueId(
-                        NodeId.parse(tag.getIdentifier()),
-                        AttributeId.Value.uid(),
-                        null,
-                        QualifiedName.NULL_VALUE
-                    ))
-                );
-            }
-            
-            // Add telegrams to subscription
-            if (plcConfig.getOpcUa().getTelegrams() != null) {
-                plcConfig.getOpcUa().getTelegrams().forEach(telegram -> 
-                    readValueIds.add(new ReadValueId(
-                        NodeId.parse(telegram.getIdentifier()),
-                        AttributeId.Value.uid(),
-                        null,
-                        QualifiedName.NULL_VALUE
-                    ))
-                );
-            }
+  
 
-            if (!readValueIds.isEmpty()) {
-                createSubscription(publishingInterval, readValueIds);
-            }
-        } catch (Exception e) {
-            log.error("Error setting up subscriptions", e);
-        }
-    }
+   
 
-    private void createSubscription(double publishingInterval, List<ReadValueId> readValueIds) {
-        client.getSubscriptionManager().createSubscription(publishingInterval).thenAccept(subscription -> {
-            List<MonitoredItemCreateRequest> requests = readValueIds.stream()
-                .map(readValueId -> new MonitoredItemCreateRequest(
-                    readValueId,
-                    MonitoringMode.Reporting,
-                    new MonitoringParameters(
-                        UInteger.valueOf(readValueIds.indexOf(readValueId)),
-                        publishingInterval,
-                        null,
-                        UInteger.valueOf(10),
-                        true
-                    )
-                ))
-                .toList();
-
-            subscription.createMonitoredItems(
-                TimestampsToReturn.Both,
-                requests,
-                (item, id) -> item.setValueConsumer(this::handleValueChange)
-            );
-            
-            log.info("Successfully subscribed to {} items", readValueIds.size());
-        });
-    }
-
-    private void handleValueChange(DataValue value) {
-        try {
-            if (value != null && value.getValue() != null) {
-                String nodeId = value.getSourceTime().toString(); // You might want to modify this based on your needs
-                tagValues.put(nodeId, value);
-                
-                Variant variant = value.getValue();
-                log.debug("Value updated: NodeId={}, Value={}", nodeId, variant.getValue());
-                
-                // Publish to Kafka when value changes
-                publishToBrowseData(nodeId, value);
-            }
-        } catch (Exception e) {
-            log.error("Error handling value change", e);
-        }
-    }
-
+  
     public Optional<DataValue> readValue(String identifier) {
     	 try {
     	        
@@ -220,28 +145,7 @@ public class OpcUaService {
     }
     
 
-    public List<String> browseTags(String startingNode) {
-        try {
-            NodeId nodeId = startingNode != null ? 
-                NodeId.parse(startingNode) : 
-                Identifiers.ObjectsFolder;
-
-            List<String> tags = client.getAddressSpace().browse(nodeId).stream()
-                .map(ref -> ref.getNodeId().toParseableString())
-                .toList();
-
-            // For each tag found, read its value and publish to Kafka
-            tags.forEach(tag -> {
-                Optional<DataValue> value = readValue(tag);
-                value.ifPresent(dataValue -> publishToBrowseData(tag, dataValue));
-            });
-
-            return tags;
-        } catch (Exception e) {
-            log.error("Error browsing tags", e);
-            return Collections.emptyList();
-        }
-    }
+   
 
     public boolean isConnected() {
         try {
@@ -265,46 +169,7 @@ public class OpcUaService {
         }
     }
 
-    public boolean writeValue(String identifier, String value) {
-        try {
-            NodeId nodeId = NodeId.parse(identifier);
-            
-            // First read the current value to determine its data type
-            Optional<DataValue> currentValue = readValue(identifier);
-            if (currentValue.isEmpty()) {
-                log.error("Could not read current value to determine data type for nodeId={}", nodeId);
-                return false;
-            }
-
-            // Convert the input string to the correct data type
-            Variant variant = convertToTargetType(value, currentValue.get().getValue());
-            DataValue dataValue = new DataValue(variant, null, null);
-            
-            // Create lists for batch write operation
-            List<NodeId> nodeIds = ImmutableList.of(nodeId);
-            List<DataValue> dataValues = ImmutableList.of(dataValue);
-            
-            // Write values and wait for result
-            List<StatusCode> statusCodes = client.writeValues(nodeIds, dataValues).get();
-            StatusCode status = statusCodes.get(0);
-            
-            if (status.isGood()) {
-               
-                
-                // Read back the value to verify and publish to Kafka
-                Optional<DataValue> readBack = readValue(identifier);
-                readBack.ifPresent(readValue -> publishToBrowseData(identifier, readValue));
-                return true;
-            } else {
-                log.error("Failed to write value. StatusCode={}", status);
-                return false;
-            }
-        } catch (Exception e) {
-            log.error("Error writing value for identifier: {}", identifier, e);
-            return false;
-        }
-    }
-
+   
     private Variant convertToTargetType(String value, Variant currentValue) {
         Object currentObj = currentValue.getValue();
         try {
@@ -332,85 +197,9 @@ public class OpcUaService {
         }
     }
 
-    public boolean writeValues(List<String> identifiers, List<String> values) {
-        try {
-            List<NodeId> nodeIds = new ArrayList<>();
-            List<DataValue> dataValues = new ArrayList<>();
-            
-            // Process each value with its correct type
-            for (int i = 0; i < identifiers.size(); i++) {
-                NodeId nodeId = NodeId.parse(identifiers.get(i));
-                Optional<DataValue> currentValue = readValue(identifiers.get(i));
-                
-                if (currentValue.isPresent()) {
-                    Variant variant = convertToTargetType(values.get(i), currentValue.get().getValue());
-                    dataValues.add(new DataValue(variant, null, null));
-                    nodeIds.add(nodeId);
-                } else {
-                    log.error("Could not read current value for nodeId={}", nodeId);
-                    return false;
-                }
-            }
-            
-            List<StatusCode> results = client.writeValues(nodeIds, dataValues).get();
-            boolean allSuccess = results.stream().allMatch(StatusCode::isGood);
-            
-            if (allSuccess) {
-                log.info("Successfully wrote batch values");
-            } else {
-                log.error("Some batch writes failed");
-            }
-            
-            return allSuccess;
-        } catch (Exception e) {
-            log.error("Error writing multiple values", e);
-            return false;
-        }
-    }
-     private void publishToBrowseData(String identifier, DataValue dataValue) {
-        try {
-            Map<String, Object> browseData = new HashMap<>();
-            browseData.put("nodeId", identifier);
-            browseData.put("value", valueConverter.convertValue(dataValue.getValue()));
-            browseData.put("status", dataValue.getStatusCode().toString());
-            browseData.put("timestamp", Instant.now().toString());
-            browseData.put("sourceTimestamp", dataValue.getSourceTime() != null ? 
-                dataValue.getSourceTime().getJavaTime() : null);
-            browseData.put("serverTimestamp", dataValue.getServerTime() != null ? 
-                dataValue.getServerTime().getJavaTime() : null);
-            
-//            kafkaBrowseService.processBrowseData(identifier, browseData);
-        } catch (Exception e) {
-            log.error("Error publishing browse data for identifier: {}", identifier, e);
-        }
-    }
-
-    public Map<String, DataValue> readValuesUnderNode(String startingNode) {
-        Map<String, DataValue> results = new HashMap<>();
-        try {
-            List<String> tags = browseTags(startingNode);
-            List<NodeId> nodeIds = tags.stream()
-                .map(NodeId::parse)
-                .toList();                 
-            
-            if (!nodeIds.isEmpty()) {
-                List<DataValue> values = client.readValues(0.0, TimestampsToReturn.Both, nodeIds).get();
-                
-                for (int i = 0; i < tags.size(); i++) {
-                    DataValue originalValue = values.get(i);
-                    DataValue convertedValue = valueConverter.convertDataValue(originalValue);
-                    results.put(tags.get(i), convertedValue);
-                    publishToBrowseData(tags.get(i), convertedValue);
-                }
-            }
-            
-            return results;
-        } catch (Exception e) {
-            log.error("Error reading values under node: {}", startingNode, e);
-            return results;
-        }
-    }
     
+    
+   
   
    
     public void saveDataFormDb() {

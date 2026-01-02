@@ -40,14 +40,7 @@ public class PredefinedNodeValueService {
                     System.err.println("⚠️ File not found: " + fileName);
                     allTags.put(key, List.of());
                     continue;
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                }
+       }
 
                 List<String> tagList = mapper.readValue(is, new TypeReference<List<String>>() {});
                 allTags.put(key, tagList);
