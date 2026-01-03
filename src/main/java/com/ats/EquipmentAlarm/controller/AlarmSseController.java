@@ -71,7 +71,7 @@ public class AlarmSseController {
 
 	                // Fetch active and resolved alarms
 	                List<EquipmentAlarmHistoryDto> activeList = euipmentAlarmService.getCachedActivateAlarm();
-	                List<Resolvedequipmentalarms> resolvedList = euipmentAlarmService.getCachedReslovedAlarm();
+	              //  List<Resolvedequipmentalarms> resolvedList = euipmentAlarmService.getCachedReslovedAlarm();
 	                
 	                       Integer lockpositoncount= masterPositionService.getLockPositionCount();
 	                       Integer misMatchCount=masterPositionService.getMismatchPositioncount();
@@ -80,7 +80,7 @@ public class AlarmSseController {
 
 	                Map<String, Object> data = new HashMap<>();
 	                data.put("activelist", activeList);
-	                data.put("resolvedlist", resolvedList);
+	               // data.put("resolvedlist", resolvedList);
 	                data.put("lockpositoncount", lockpositoncount);
 	                data.put("misMatchCount", misMatchCount);
 	                // ✅ stacker name + control mode

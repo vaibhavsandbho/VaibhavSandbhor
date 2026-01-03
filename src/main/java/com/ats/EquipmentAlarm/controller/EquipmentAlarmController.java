@@ -15,6 +15,7 @@ import java.util.*;
 import java.util.function.Function;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -84,6 +85,10 @@ public class EquipmentAlarmController {
     @Autowired
     private ResourceLoader resourceLoader;
     
+
+    @Value("${spring.cache.redis.key-prefix}")
+    private String redisPrefix;
+    
     private final Map<String, Boolean> alarmStates = new ConcurrentHashMap<>();
 //
    
@@ -104,7 +109,7 @@ public class EquipmentAlarmController {
             while (running) {
                 try {
                 	readAndProcessWordAlarmsFromWordTags();
-                    Thread.sleep(10000); // Run every 10 second
+                    Thread.sleep(15000); // Run every 10 second
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                     break;
@@ -429,11 +434,9 @@ handleAlarmChange(alarmDetail, equipment, active, redisKey, alarmsToInsert, alar
     }
 
     private void cacheNewAlarms(Collection<EquipmentAlarmHistoryEntity> newAlarms) {
-        List<EquipmentAlarmHistoryDto> cachedDtos =
-                (List<EquipmentAlarmHistoryDto>) cacheAlarmServiceInstance.redisTemplate.opsForValue()
-                        .get(cacheAlarmServiceInstance.ACTIVE_ALARMS_KEY);
 
-        if (cachedDtos == null) cachedDtos = new ArrayList<>();
+        List<EquipmentAlarmHistoryDto> cachedDtos =
+                cacheAlarmServiceInstance.getCachedActivateAlarm();
 
         Set<Integer> existingIds = cachedDtos.stream()
                 .map(EquipmentAlarmHistoryDto::getEquipmentAlarmId)
@@ -445,23 +448,26 @@ handleAlarmChange(alarmDetail, equipment, active, redisKey, alarmsToInsert, alar
                 .collect(Collectors.toList());
 
         cachedDtos.addAll(newDtos);
-        cacheAlarmServiceInstance.redisTemplate.opsForValue().set(cacheAlarmServiceInstance.ACTIVE_ALARMS_KEY, cachedDtos);
+
+        cacheAlarmServiceInstance.updatedActiveAlarmCache(cachedDtos);
     }
 
-    private void cacheResolvedAlarms(Collection<EquipmentAlarmHistoryEntity> resolvedAlarms) {
-        List<EquipmentAlarmHistoryDto> cachedDtos =
-                (List<EquipmentAlarmHistoryDto>) cacheAlarmServiceInstance.redisTemplate.opsForValue()
-                        .get(cacheAlarmServiceInstance.ACTIVE_ALARMS_KEY);
 
-        if (cachedDtos != null) {
+    private void cacheResolvedAlarms(Collection<EquipmentAlarmHistoryEntity> resolvedAlarms) {
+
+        List<EquipmentAlarmHistoryDto> cachedDtos =
+                cacheAlarmServiceInstance.getCachedReslovedAlarm();
+
+        if (!cachedDtos.isEmpty()) {
             Set<Integer> resolvedIds = resolvedAlarms.stream()
                     .map(EquipmentAlarmHistoryEntity::getEquipmentAlarmId)
                     .collect(Collectors.toSet());
 
             cachedDtos.removeIf(dto -> resolvedIds.contains(dto.getEquipmentAlarmId()));
-            cacheAlarmServiceInstance.redisTemplate.opsForValue().set(cacheAlarmServiceInstance.ACTIVE_ALARMS_KEY, cachedDtos);
+            cacheAlarmServiceInstance.updatedActiveAlarmCache(cachedDtos);
         }
     }
+
 
     private String getRedisKey(String alarmKey) {
         return "alarmState:" + alarmKey;
