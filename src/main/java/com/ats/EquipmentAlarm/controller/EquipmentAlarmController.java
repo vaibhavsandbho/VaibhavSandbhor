@@ -431,7 +431,7 @@ handleAlarmChange(alarmDetail, equipment, active, redisKey, alarmsToInsert, alar
     private void cacheNewAlarms(Collection<EquipmentAlarmHistoryEntity> newAlarms) {
         List<EquipmentAlarmHistoryDto> cachedDtos =
                 (List<EquipmentAlarmHistoryDto>) cacheAlarmServiceInstance.redisTemplate.opsForValue()
-                        .get(cacheAlarmServiceInstance.ACTIVE_ALARMS_KEY);
+                        .get(cacheAlarmServiceInstance.CELL_ACTIVE_ALARMS_KEY);
 
         if (cachedDtos == null) cachedDtos = new ArrayList<>();
 
@@ -445,13 +445,13 @@ handleAlarmChange(alarmDetail, equipment, active, redisKey, alarmsToInsert, alar
                 .collect(Collectors.toList());
 
         cachedDtos.addAll(newDtos);
-        cacheAlarmServiceInstance.redisTemplate.opsForValue().set(cacheAlarmServiceInstance.ACTIVE_ALARMS_KEY, cachedDtos);
+        cacheAlarmServiceInstance.redisTemplate.opsForValue().set(cacheAlarmServiceInstance.CELL_ACTIVE_ALARMS_KEY, cachedDtos);
     }
 
     private void cacheResolvedAlarms(Collection<EquipmentAlarmHistoryEntity> resolvedAlarms) {
         List<EquipmentAlarmHistoryDto> cachedDtos =
                 (List<EquipmentAlarmHistoryDto>) cacheAlarmServiceInstance.redisTemplate.opsForValue()
-                        .get(cacheAlarmServiceInstance.ACTIVE_ALARMS_KEY);
+                        .get(cacheAlarmServiceInstance.CELL_ACTIVE_ALARMS_KEY);
 
         if (cachedDtos != null) {
             Set<Integer> resolvedIds = resolvedAlarms.stream()
@@ -459,7 +459,7 @@ handleAlarmChange(alarmDetail, equipment, active, redisKey, alarmsToInsert, alar
                     .collect(Collectors.toSet());
 
             cachedDtos.removeIf(dto -> resolvedIds.contains(dto.getEquipmentAlarmId()));
-            cacheAlarmServiceInstance.redisTemplate.opsForValue().set(cacheAlarmServiceInstance.ACTIVE_ALARMS_KEY, cachedDtos);
+            cacheAlarmServiceInstance.redisTemplate.opsForValue().set(cacheAlarmServiceInstance.CELL_ACTIVE_ALARMS_KEY, cachedDtos);
         }
     }
 

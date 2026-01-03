@@ -1,6 +1,6 @@
 spring:
   application:
-    name: EquipmentAlarm
+    name: cell-alarm
 
   jpa:
     hibernate:
