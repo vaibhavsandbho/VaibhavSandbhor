@@ -434,9 +434,11 @@ handleAlarmChange(alarmDetail, equipment, active, redisKey, alarmsToInsert, alar
     }
 
     private void cacheNewAlarms(Collection<EquipmentAlarmHistoryEntity> newAlarms) {
-
         List<EquipmentAlarmHistoryDto> cachedDtos =
-                cacheAlarmServiceInstance.getCachedActivateAlarm();
+                (List<EquipmentAlarmHistoryDto>) cacheAlarmServiceInstance.redisTemplate.opsForValue()
+                        .get(cacheAlarmServiceInstance.BATTERY_ACTIVE_ALARMS_KEY);
+
+        if (cachedDtos == null) cachedDtos = new ArrayList<>();
 
         Set<Integer> existingIds = cachedDtos.stream()
                 .map(EquipmentAlarmHistoryDto::getEquipmentAlarmId)
@@ -448,26 +450,23 @@ handleAlarmChange(alarmDetail, equipment, active, redisKey, alarmsToInsert, alar
                 .collect(Collectors.toList());
 
         cachedDtos.addAll(newDtos);
-
-        cacheAlarmServiceInstance.updatedActiveAlarmCache(cachedDtos);
+        cacheAlarmServiceInstance.redisTemplate.opsForValue().set(cacheAlarmServiceInstance.BATTERY_ACTIVE_ALARMS_KEY, cachedDtos);
     }
 
-
     private void cacheResolvedAlarms(Collection<EquipmentAlarmHistoryEntity> resolvedAlarms) {
-
         List<EquipmentAlarmHistoryDto> cachedDtos =
-                cacheAlarmServiceInstance.getCachedReslovedAlarm();
-
-        if (!cachedDtos.isEmpty()) {
+                (List<EquipmentAlarmHistoryDto>) cacheAlarmServiceInstance.redisTemplate.opsForValue()
+                        .get(cacheAlarmServiceInstance.BATTERY_ACTIVE_ALARMS_KEY);
+                             
+        if (cachedDtos != null) {
             Set<Integer> resolvedIds = resolvedAlarms.stream()
                     .map(EquipmentAlarmHistoryEntity::getEquipmentAlarmId)
                     .collect(Collectors.toSet());
 
             cachedDtos.removeIf(dto -> resolvedIds.contains(dto.getEquipmentAlarmId()));
-            cacheAlarmServiceInstance.updatedActiveAlarmCache(cachedDtos);
+            cacheAlarmServiceInstance.redisTemplate.opsForValue().set(cacheAlarmServiceInstance.BATTERY_ACTIVE_ALARMS_KEY, cachedDtos);
         }
     }
-
 
     private String getRedisKey(String alarmKey) {
         return "alarmState:" + alarmKey;

@@ -1,6 +1,6 @@
 spring:
   application:
-    name: EquipmentAlarm
+    name: BATTERY
 
   jpa:
     hibernate:
@@ -27,12 +27,7 @@ spring:
       port: 6379
       timeout: 60000
 
-  cache:
-    type: redis
-    redis:
-      key-prefix: BATTERY
-      use-key-prefix: true
-      time-to-live: 600000   # 10 minutes (optional)
+  
 
 server:
   port: 8090
