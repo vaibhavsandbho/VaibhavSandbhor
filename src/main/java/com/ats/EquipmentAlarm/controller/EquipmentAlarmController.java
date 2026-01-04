@@ -86,8 +86,6 @@ public class EquipmentAlarmController {
     private ResourceLoader resourceLoader;
     
 
-    @Value("${spring.cache.redis.key-prefix}")
-    private String redisPrefix;
     
     private final Map<String, Boolean> alarmStates = new ConcurrentHashMap<>();
 //
