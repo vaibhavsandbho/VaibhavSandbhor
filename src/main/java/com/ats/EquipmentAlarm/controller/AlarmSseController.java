@@ -85,6 +85,8 @@ public class AlarmSseController {
 	                data.put("misMatchCount", misMatchCount);
 	                // ✅ stacker name + control mode
 	                data.put("stackerModes", stackerService.getStackerModes());
+	                
+	                data.put("alarmcount", activeList.size());
 	             
 	                try {
 	                    sseEmitter.send(SseEmitter.event().name("alarm-update").data(data));
@@ -102,6 +104,16 @@ public class AlarmSseController {
 
 	    return sseEmitter;
 	}
+	
+	@GetMapping("/count")
+	public Map<String, Integer> getAlarmCountOnce() {
+	    Map<String, Integer> map = new HashMap<>();
+	    map.put("activeCount", euipmentAlarmService.getCachedActivateAlarm().size());
+	    map.put("resolvedCount", euipmentAlarmService.getCachedReslovedAlarm().size());
+	    return map;
+	}
+
+	
 
 }
     

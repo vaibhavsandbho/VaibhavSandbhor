@@ -97,18 +97,15 @@
   "ns=3;s=\"3.PLC_TO_WMS_ST1_ALM\".\"Alarm95\"",
   "ns=3;s=\"3.PLC_TO_WMS_ST1_ALM\".\"Alarm96\"",
   "ns=3;s=\"3.PLC_TO_WMS_ST1_ALM\".\"Alarm97\"",
-"ns=3;s=\"3.PLC_TO_WMS_ST1_ALM\".\"Alarm98\"",
+  "ns=3;s=\"3.PLC_TO_WMS_ST1_ALM\".\"Alarm98\"",
   "ns=3;s=\"3.PLC_TO_WMS_ST1_ALM\".\"Alarm99\"",
   "ns=3;s=\"3.PLC_TO_WMS_ST1_ALM\".\"Alarm100\"",
   "ns=3;s=\"3.PLC_TO_WMS_ST1_ALM\".\"Alarm101\"",
-    "ns=3;s=\"3.PLC_TO_WMS_ST1_ALM\".\"Alarm102\"",
-      "ns=3;s=\"3.PLC_TO_WMS_ST1_ALM\".\"Alarm103\"",
-
-
-
-
-
-
+  "ns=3;s=\"3.PLC_TO_WMS_ST1_ALM\".\"Alarm102\"",
+  "ns=3;s=\"3.PLC_TO_WMS_ST1_ALM\".\"Alarm103\"",
+  "ns=3;s=\"3.PLC_TO_WMS_ST1_ALM\".\"Alarm104\"",
+  "ns=3;s=\"3.PLC_TO_WMS_ST1_ALM\".\"Alarm105\"",
+  "ns=3;s=\"3.PLC_TO_WMS_ST1_ALM\".\"Alarm106\"",
 
   "ns=3;s=\"5.PLC_TO_WMS_ST2_ALM\".\"Alarm0\"",
   "ns=3;s=\"5.PLC_TO_WMS_ST2_ALM\".\"Alarm1\"",
@@ -206,13 +203,16 @@
   "ns=3;s=\"5.PLC_TO_WMS_ST2_ALM\".\"Alarm94\"",
   "ns=3;s=\"5.PLC_TO_WMS_ST2_ALM\".\"Alarm95\"",
   "ns=3;s=\"5.PLC_TO_WMS_ST2_ALM\".\"Alarm96\"",
-  "ns=3;s=\"3.PLC_TO_WMS_ST2_ALM\".\"Alarm97\"",
-"ns=3;s=\"3.PLC_TO_WMS_ST2_ALM\".\"Alarm98\"",
-  "ns=3;s=\"3.PLC_TO_WMS_ST2_ALM\".\"Alarm99\"",
-  "ns=3;s=\"3.PLC_TO_WMS_ST2_ALM\".\"Alarm100\"",
-  "ns=3;s=\"3.PLC_TO_WMS_ST2_ALM\".\"Alarm101\"",
-    "ns=3;s=\"3.PLC_TO_WMS_ST2_ALM\".\"Alarm102\"",
-      "ns=3;s=\"3.PLC_TO_WMS_ST2_ALM\".\"Alarm103\"",
+  "ns=3;s=\"5.PLC_TO_WMS_ST2_ALM\".\"Alarm97\"",
+  "ns=3;s=\"5.PLC_TO_WMS_ST2_ALM\".\"Alarm98\"",
+  "ns=3;s=\"5.PLC_TO_WMS_ST2_ALM\".\"Alarm99\"",
+  "ns=3;s=\"5.PLC_TO_WMS_ST2_ALM\".\"Alarm100\"",
+  "ns=3;s=\"5.PLC_TO_WMS_ST2_ALM\".\"Alarm101\"",
+  "ns=3;s=\"5.PLC_TO_WMS_ST2_ALM\".\"Alarm102\"",
+  "ns=3;s=\"5.PLC_TO_WMS_ST2_ALM\".\"Alarm103\"",
+  "ns=3;s=\"5.PLC_TO_WMS_ST2_ALM\".\"Alarm104\"",
+  "ns=3;s=\"5.PLC_TO_WMS_ST2_ALM\".\"Alarm105\"",
+  "ns=3;s=\"5.PLC_TO_WMS_ST2_ALM\".\"Alarm106\"",
 
 
   "ns=3;s=\"7.PLC_TO_WMS_ST3_ALM\".\"Alarm0\"",
@@ -311,13 +311,16 @@
   "ns=3;s=\"7.PLC_TO_WMS_ST3_ALM\".\"Alarm94\"",
   "ns=3;s=\"7.PLC_TO_WMS_ST3_ALM\".\"Alarm95\"",
   "ns=3;s=\"7.PLC_TO_WMS_ST3_ALM\".\"Alarm96\"",
-  "ns=3;s=\"3.PLC_TO_WMS_ST3_ALM\".\"Alarm97\"",
-"ns=3;s=\"3.PLC_TO_WMS_ST3_ALM\".\"Alarm98\"",
-  "ns=3;s=\"3.PLC_TO_WMS_ST3_ALM\".\"Alarm99\"",
-  "ns=3;s=\"3.PLC_TO_WMS_ST3_ALM\".\"Alarm100\"",
-  "ns=3;s=\"3.PLC_TO_WMS_ST3_ALM\".\"Alarm101\"",
-    "ns=3;s=\"3.PLC_TO_WMS_ST3_ALM\".\"Alarm102\"",
-      "ns=3;s=\"3.PLC_TO_WMS_ST3_ALM\".\"Alarm103\""
+  "ns=3;s=\"7.PLC_TO_WMS_ST3_ALM\".\"Alarm97\"",
+  "ns=3;s=\"7.PLC_TO_WMS_ST3_ALM\".\"Alarm98\"",
+  "ns=3;s=\"7.PLC_TO_WMS_ST3_ALM\".\"Alarm99\"",
+  "ns=3;s=\"7.PLC_TO_WMS_ST3_ALM\".\"Alarm100\"",
+  "ns=3;s=\"7.PLC_TO_WMS_ST3_ALM\".\"Alarm101\"",
+  "ns=3;s=\"7.PLC_TO_WMS_ST3_ALM\".\"Alarm102\"",
+  "ns=3;s=\"7.PLC_TO_WMS_ST3_ALM\".\"Alarm103\"",
+  "ns=3;s=\"7.PLC_TO_WMS_ST3_ALM\".\"Alarm104\"",
+  "ns=3;s=\"7.PLC_TO_WMS_ST3_ALM\".\"Alarm105\"",
+  "ns=3;s=\"7.PLC_TO_WMS_ST3_ALM\".\"Alarm106\""
 ]
 
 

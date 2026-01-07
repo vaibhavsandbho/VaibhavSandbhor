@@ -427,8 +427,7 @@ public class OpcUaService {
             e.printStackTrace();
         }
     }
-    
-   
+ 
     public void saveEquipmentDetails() throws StreamWriteException, DatabindException, IOException
     {
     	 

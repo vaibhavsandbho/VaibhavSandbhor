@@ -1,4 +1,7 @@
 [
-
-"ns=3;s=\"WMS TO PLC\".\"RO12 Duplicate Pallet Code\""
+  "ns=3;s=\"Alarm_DB\".\"Communication_Fault\"",
+  "ns=3;s=\"Alarm_DB\".\"EMG Comm Fault\"",
+  "ns=3;s=\"Alarm_DB\".\"BCR Comm Fault\"",
+  "ns=3;s=\"Alarm_DB\".\"Load Cell Comm Fault\"",
+  "ns=3;s=\"WMS TO PLC\".\"RO12 Duplicate Pallet Code\""
 ]
