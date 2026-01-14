@@ -2111,17 +2111,7 @@
         "bitNo": 0,
         "userId": 1
     },
-    {
-        "equipmentAlarmId": 135,
-        "equipmentId": 3,
-        "equipmentAlarmTag": "ns=3;s=1034.ST3 ALARMS.E_STOP_PRESSED_FAULT",
-        "equipmentAlarmName": "ST3-E_STOP_PRESSED_FAULT",
-        "equipmentAlarmDesc": "ST3-E_STOP_PRESSED_FAULT",
-        "equipmentAlarmStatus": true,
-        "equipmentAlarmIsDeleted": false,
-        "bitNo": 0,
-        "userId": 1
-    },
+
     {
         "equipmentAlarmId": 136,
         "equipmentId": 3,

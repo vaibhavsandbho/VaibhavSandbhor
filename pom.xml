@@ -16,7 +16,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/x
     <packaging>war</packaging>
 
     <properties>
-        <java.version>8</java.version>
+        <java.version>17</java.version>
         <milo.version>0.6.15</milo.version>
     </properties>
 
