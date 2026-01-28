@@ -1,7 +1,6 @@
-
 spring:
   application:
-    name: EquipmentAlarm
+    name: BATTERY
 
   jpa:
     hibernate:
@@ -36,7 +35,7 @@ server:
 plc:
   opc-ua:
     enabled: true
-    server-url: "opc.tcp://192.168.28.1:4840"   # corrected with colon before 4840
+    server-url: "opc.tcp://192.168.24.1:4840"   # corrected with colon before 4840
     security-policy: "None"
     username: ""
     password: ""
@@ -44,45 +43,57 @@ plc:
     max-reconnect-attempts: 3
     reconnect-delay: 5000
 
+# Thread Pool Configuration for OPC-UA operations - AGGRESSIVE LIMITING
+executor:
+  core-pool-size: 4        # Core threads (reduced from 8)
+  max-pool-size: 8         # Maximum concurrent threads (reduced from 16)
+  queue-capacity: 50       # Maximum pending tasks (reduced from 100)
+  keep-alive-seconds: 30   # Idle thread keep-alive time (reduced from 60)
+
   tags:
     - name: "Tag1"
-      identifier: "ns=0;i=2253"
-      dataType: "Object"
-    - name: "Tag2"
-      identifier: "ns=2;i=5001"
-      dataType: "Object"
-    - name: "PLC"
-      identifier: "ns=3;s=PLC"
-      dataType: "Object"
+      identifier: 
+      dataType: Object
+
+    - name: Tag2
+      identifier: 
+      dataType: Object
+
+    - name: PLC
+      identifier: 
+      dataType: Object
 
   telegrams:
-    - name: "ProductionData"
+    - name: ProductionData
       identifier: "ns=2;s=Telegram_Production"
-      dataType: "ByteString"
+      dataType: ByteString
       length: 100
-      format: "Binary"
+      format: Binary
       isArray: true
-    - name: "MachineStatus"
+
+    - name: MachineStatus
       identifier: "ns=2;s=Telegram_Status"
-      dataType: "String"
+      dataType: String
       length: 50
-      format: "ASCII"
+      format: ASCII
       isArray: false
-    - name: "ProcessValues"
+
+    - name: ProcessValues
       identifier: "ns=2;s=Telegram_Process"
-      dataType: "ByteString"
+      dataType: ByteString
       length: 200
-      format: "Binary"
+      format: Binary
       isArray: true
 
   writer:
     enabled: false
     interval: 5000
-    node-id: "ns=3;s=\"Lumax WMS<>PLC\".\"STACKER_1_MISSION_PALLET_CODE\""
+    node-id: 'ns=3;s="Lumax WMS<>PLC"."STACKER_1_MISSION_PALLET_CODE"'
 
 logging:
   level:
     com.ats.plc: DEBUG
     org.eclipse.milo: INFO
+
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
