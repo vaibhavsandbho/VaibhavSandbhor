@@ -56,9 +56,9 @@ public class StackerHealthController {
 
                 // Define node IDs for each stacker
                 Map<String, String> stackerNodes = Map.of(
-                        "STKR1", "ns=3;s=\"0.PLC_TO_WMS\".\"STKR1_Control mode\"",
-                        "STKR2", "ns=3;s=\"0.PLC_TO_WMS\".\"STKR2_Control mode\"",
-                        "STKR3", "ns=3;s=\"0.PLC_TO_WMS\".\"STKR3_Control mode\""
+                        "STKR1", "ns=3;s=\"ST1_ PLC_ TO IT\".\"STACKER_1_CONTROL_MODE\"",
+                        "STKR2", "ns=3;s=\"ST2_ PLC_ TO IT\".\"STACKER_2_CONTROL_MODE\"",
+                        "STKR3", "ns=3;s=\"ST3_ PLC_ TO IT\".\"STACKER_3_CONTROL_MODE\""
                 );
 
                 // Loop over each stacker and read its control mode
