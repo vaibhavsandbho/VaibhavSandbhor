@@ -34,7 +34,7 @@ public interface MasterPositionRepo extends JpaRepository<MasterPositionDetailsE
 	public	Integer findCountLockPosition();
 	
 	
-	@Query("SELECT COUNT(m) FROM MasterPositionDetailsEntity m WHERE m.isDataMismatch=1 ")
+	@Query("SELECT COUNT(m) FROM MasterPositionDetailsEntity m WHERE m.isDataMismatch=2")
 	int findMismatchPositionCount();
 	
 }
